@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Let's Practice{% endblock %}
+
+{% block body_class %}page--practice{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/lets_practice.css' %}">
+{% endblock %}
+
+{% block content %}
+<form class="visually-hidden" aria-hidden="true">
+    {% csrf_token %}
+</form>
+
+<section class="practice-hero panel-surface panel-surface--hero" aria-label="Let's Practice translator page">
+    <p class="eyebrow">Practice</p>
+    <h1 class="display-title">Translate between text and sign.</h1>
+    <p class="lead-copy">Choose a mode, then use the workspace below.</p>
+</section>
+
+<section class="translator-shell panel-surface" data-mode="text-to-sign" data-lookup-url="{% url 'signasl_lookup' %}" data-capture-url="{% url 'save_skeletal_hand_capture' %}" data-predict-url="{% url 'predict_skeletal_sign' %}">
+    <div class="translator-shell__header">
+        <div>
+            <h2>Translator</h2>
+        </div>
+        <span class="status-pill">Interactive</span>
+    </div>
+
+        <div class="translator-topbar">
+            <div class="translator-mode" id="mode-label">Text → Sign</div>
+            <button class="swap-button" type="button" id="swap-translator" aria-label="Switch translator direction">
+                <span class="swap-button__icon" aria-hidden="true">&harr;</span>
+            </button>
+        </div>
+
+        <div class="translator-grid">
+            <article class="translator-panel translator-panel--input">
+                <header class="translator-panel__header">
+                    <h2 id="source-title">Text</h2>
+                    <span id="source-hint">Word / phrase / sentence</span>
+                </header>
+
+                <div class="mode-block mode-block--active" data-mode-block="text-to-sign-source">
+                    <label class="visually-hidden" for="practice-text-input">Text input</label>
+                    <textarea
+                        id="practice-text-input"
+                        class="translator-textarea"
+                        placeholder="Type a word, phrase, or short sentence..."
+                    ></textarea>
+                </div>
+
+                <div class="mode-block" data-mode-block="sign-to-text-source">
+                    <div class="sign-capture-box">
+                        <div class="capture-mark">Cam ●</div>
+                        <div class="capture-sign-name-row">
+                            <label for="sign-context-mode" class="capture-sign-name-label">Interpret as</label>
+                            <select id="sign-context-mode" class="capture-sign-name-input">
+                                <option value="general">General signs</option>
+                                <option value="alphabet">Alphabet</option>
+                                <option value="numbers">Numbers</option>
+                            </select>
+                        </div>
+                        <div class="camera-preview-shell">
+                            <video id="camera-preview" class="camera-preview" autoplay muted playsinline></video>
+                            <canvas id="camera-overlay" class="camera-overlay" aria-hidden="true"></canvas>
+                            <div id="camera-status" class="camera-status">Switch to Sign → Text.</div>
+                        </div>
+                        <div class="capture-sign-name-row">
+                            <label for="capture-sign-name" class="capture-sign-name-label">Sign name</label>
+                            <input
+                                id="capture-sign-name"
+                                class="capture-sign-name-input"
+                                type="text"
+                                placeholder="Example: Hello"
+                                autocomplete="off"
+                                maxlength="64"
+                            >
+                        </div>
+                        <div class="capture-controls">
+                            <button class="capture-button" type="button" id="restart-camera">Restart camera</button>
+                            <button class="capture-button" type="button" id="toggle-capture-mode">Start skeletal capture</button>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="translator-panel translator-panel--output">
+                <header class="translator-panel__header">
+                    <h2 id="target-title">Sign</h2>
+                    <span id="target-hint">Preview</span>
+                </header>
+
+                <div class="mode-block mode-block--active" data-mode-block="text-to-sign-target">
+                    <div class="sign-preview" id="sign-preview">
+                        <div class="sign-preview__empty-state" aria-hidden="true"></div>
+                    </div>
+                </div>
+
+                <div class="mode-block" data-mode-block="sign-to-text-target">
+                    <div class="translated-text-box" id="sign-text-output">
+                        Text output.
+                    </div>
+                </div>
+            </article>
+        </div>
+
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script src="{% static 'js/lets_practice.js' %}"></script>
+{% endblock %}

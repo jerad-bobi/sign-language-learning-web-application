@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Handspeak Atlas{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="site-body {% block body_class %}{% endblock %}">
+
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <a href="{% url 'home' %}" class="nav-brand" aria-label="Go to homepage">
+                <span class="brand-icon">HA</span>
+                <span class="brand-name">Handspeak Atlas</span>
+            </a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="{% url 'home' %}" class="{% if active_page == 'home' %}nav-link--active{% endif %}">Home</a></li>
+                <li><a href="{% url 'sharpen_your_brain' %}" class="{% if active_page == 'brain' %}nav-link--active{% endif %}">Quiz</a></li>
+                <li><a href="{% url 'lets_practice' %}" class="{% if active_page == 'practice' %}nav-link--active{% endif %}">Practice</a></li>
+                <li><a href="{% url 'learn_vocabularies' %}" class="{% if active_page == 'vocabularies' %}nav-link--active{% endif %}">Vocabulary</a></li>
+                <li class="nav-mobile-actions">
+                    <a href="{% url 'account_access' %}" class="btn btn-primary">Account</a>
+                </li>
+            </ul>
+            <div class="nav-actions">
+                <a href="{% url 'account_access' %}" class="btn {% if active_page == 'about' %}btn-primary{% else %}btn-ghost{% endif %}">Account</a>
+            </div>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="page-frame">
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-inner">
+                <a href="{% url 'home' %}" class="footer-brand">
+                    <span class="brand-icon brand-icon--sm">HA</span>
+                    <span>Handspeak Atlas</span>
+                </a>
+                <nav class="footer-nav" aria-label="Footer navigation">
+                    <a href="{% url 'home' %}">Home</a>
+                    <a href="{% url 'learn_vocabularies' %}">Vocabulary</a>
+                    <a href="{% url 'lets_practice' %}">Practice</a>
+                    <a href="{% url 'sharpen_your_brain' %}">Quiz</a>
+                    <a href="{% url 'account_access' %}">Account</a>
+                </nav>
+                <p class="footer-copy">&copy; 2025 Handspeak Atlas</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+    (function(){
+        const nb = document.getElementById('navbar');
+        window.addEventListener('scroll', () => { nb.classList.toggle('scrolled', window.scrollY > 40); }, {passive:true});
+        const nt = document.getElementById('navToggle');
+        const nl = document.getElementById('navLinks');
+        nt.addEventListener('click', () => { nt.classList.toggle('active'); nl.classList.toggle('open'); });
+        nl.querySelectorAll('a').forEach(a => a.addEventListener('click', () => { nt.classList.remove('active'); nl.classList.remove('open'); }));
+        const pRM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if(!pRM){
+            const obs = new IntersectionObserver(es => { es.forEach(e => { if(e.isIntersecting){ const sib = e.target.parentElement.querySelectorAll('.fade-up:not(.visible)'); const i = Array.from(sib).indexOf(e.target); setTimeout(()=>e.target.classList.add('visible'), Math.max(0,i)*100); obs.unobserve(e.target); }}); }, {threshold:0.1, rootMargin:'0px 0px -30px 0px'});
+            document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+        } else { document.querySelectorAll('.fade-up').forEach(el => el.classList.add('visible')); }
+    })();
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

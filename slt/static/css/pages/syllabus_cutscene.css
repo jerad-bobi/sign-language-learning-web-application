@@ -1,0 +1,161 @@
+.site-cutscene {
+    position: fixed;
+    inset: 0;
+    z-index: 1600;
+    display: grid;
+    place-items: center;
+    background: #000;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.55s ease, visibility 0.55s ease;
+}
+
+.site-cutscene--hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.site-cutscene__blackout {
+    position: absolute;
+    inset: 0;
+    background: #000;
+}
+
+.site-cutscene__stage {
+    position: relative;
+    width: min(520px, calc(100% - 30px));
+    min-height: 280px;
+    display: grid;
+    place-items: center;
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.site-cutscene--avatar .site-cutscene__stage {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.site-cutscene__avatar {
+    width: clamp(120px, 22vw, 172px);
+    aspect-ratio: 1 / 1;
+    image-rendering: pixelated;
+    background-repeat: no-repeat;
+    background-size: contain;
+    filter: drop-shadow(0 0 24px rgba(79, 128, 255, 0.35));
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' shape-rendering='crispEdges'%3E%3Crect x='9' y='2' width='6' height='3' fill='%23ffe589'/%3E%3Crect x='8' y='5' width='8' height='2' fill='%23f7f8ff'/%3E%3Crect x='6' y='7' width='12' height='9' fill='%23ffcf40'/%3E%3Crect x='8' y='9' width='3' height='3' fill='%23111'/%3E%3Crect x='13' y='9' width='3' height='3' fill='%23111'/%3E%3Crect x='10' y='13' width='4' height='2' fill='%23ff6a88'/%3E%3Crect x='5' y='8' width='1' height='6' fill='%237895ff'/%3E%3Crect x='18' y='8' width='1' height='6' fill='%237895ff'/%3E%3Crect x='8' y='16' width='3' height='6' fill='%234f5fc6'/%3E%3Crect x='13' y='16' width='3' height='6' fill='%234f5fc6'/%3E%3C/svg%3E");
+    animation: avatar-idle 1.1s steps(2, end) infinite;
+}
+
+.site-cutscene__content {
+    position: relative;
+    z-index: 2;
+    width: min(900px, calc(100% - 30px));
+    margin-top: -28px;
+    text-align: center;
+    padding: 16px 12px 6px;
+}
+
+.site-cutscene__eyebrow,
+.site-cutscene__title {
+    margin: 0;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.site-cutscene__eyebrow {
+    margin-bottom: 12px;
+    color: #8aa4cc;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: clamp(0.6rem, 1.5vw, 0.75rem);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.site-cutscene__title {
+    margin-bottom: 16px;
+    color: #dde8ff;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: clamp(1.1rem, 2.8vw, 1.6rem);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.3;
+}
+
+.site-cutscene--avatar .site-cutscene__eyebrow,
+.site-cutscene--avatar .site-cutscene__title {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.site-cutscene__caption {
+    min-height: 3.2em;
+    margin: 0 auto;
+    max-width: 32ch;
+    color: #7ba0ff;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: clamp(1rem, 2.5vw, 1.3rem);
+    font-weight: 500;
+    line-height: 1.5;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.site-cutscene--typing .site-cutscene__caption {
+    opacity: 1;
+}
+
+.site-cutscene__cursor {
+    display: inline-block;
+    width: 0.5ch;
+    animation: cursor-blink 0.9s steps(2, end) infinite;
+}
+
+.site-cutscene__skip {
+    margin-top: 20px;
+    min-height: 40px;
+    padding: 9px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(8px);
+    color: #dde8ff;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.site-cutscene__skip:hover,
+.site-cutscene__skip:focus-visible {
+    background: rgba(255, 255, 255, 0.11);
+    border-color: rgba(255, 255, 255, 0.22);
+}
+
+.cutscene-lock {
+    overflow: hidden;
+}
+
+@keyframes avatar-idle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+
+@keyframes cursor-blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .site-cutscene,
+    .site-cutscene * {
+        animation: none !important;
+        transition: none !important;
+    }
+}

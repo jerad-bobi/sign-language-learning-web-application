@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Account{% endblock %}
+
+{% block body_class %}page--account-access{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/account_access.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="access-hero panel-surface panel-surface--hero" aria-label="Account access page">
+    <p class="eyebrow">Account</p>
+    <h1 class="display-title">Choose how you want to access your account.</h1>
+    <p class="lead-copy">Login if you already have an account, or register to create one.</p>
+</section>
+
+<section class="access-grid">
+    <article class="panel-surface access-card access-card--primary">
+        <h2>Login</h2>
+        <a href="{% url 'login' %}" class="button button--primary">Login</a>
+    </article>
+
+    <article class="panel-surface access-card">
+        <h2>Register</h2>
+        <a href="{% url 'register' %}" class="button button--secondary">Register</a>
+    </article>
+</section>
+{% endblock %}

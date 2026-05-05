@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}About Me{% endblock %}
+
+{% block body_class %}page--profile{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/profile.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="profile-layout" aria-label="Profile page">
+    <section class="panel-surface profile-card-shell">
+        <div class="profile-card">
+            <div class="profile-card__avatar">{{ account.username|first|upper }}</div>
+            <div class="profile-card__content">
+                <p class="profile-card__label">About Me</p>
+                <h2 class="profile-card__name">{{ account.username }}</h2>
+                <p class="profile-card__meta">Quiz attempts: {{ quiz_attempt_count }}{% if best_score is not None %} · Best score: {{ best_score }}{% endif %}</p>
+            </div>
+        </div>
+        <a href="{% url 'logout' %}" class="button button--secondary">Logout</a>
+    </section>
+
+    <section class="profile-history-grid">
+        <article class="panel-surface profile-history-card">
+            <div class="profile-history-card__header">
+                <div>
+                    <h2>Saved scores</h2>
+                    <p id="profile-filter-caption" class="profile-history-card__caption" data-attempt-count="{{ quiz_attempts|length }}">Showing {{ quiz_attempts|length }} saved score{{ quiz_attempts|length|pluralize }} sorted by {{ selected_score_filter_label|lower }}.</p>
+                </div>
+                <div class="profile-filter-form" aria-label="Filter saved scores">
+                    <label class="profile-filter-form__label" for="score-filter">Sort by</label>
+                    <div class="profile-filter-form__controls">
+                        <select id="score-filter" name="score_filter" class="profile-filter-form__select">
+                            {% for option in score_filter_options %}
+                            <option value="{{ option.value }}" {% if selected_score_filter == option.value %}selected{% endif %}>{{ option.label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            {% if quiz_attempts %}
+            <div id="profile-history-list" class="profile-history-list" role="list">
+                {% for attempt in quiz_attempts %}
+                <article
+                    class="profile-history-item"
+                    role="listitem"
+                    data-attempt-number="{{ attempt.attempt_number }}"
+                    data-score="{{ attempt.score }}"
+                    data-date-attempt="{{ attempt.date_attempt|date:'U' }}"
+                >
+                    <div>
+                        <p class="profile-history-item__eyebrow">Attempt {{ attempt.attempt_number }}</p>
+                        <h3 class="profile-history-item__score">Score {{ attempt.score }}</h3>
+                    </div>
+                    <time class="profile-history-item__date" datetime="{{ attempt.date_attempt|date:'c' }}">{{ attempt.date_attempt|date:'M d, Y H:i' }}</time>
+                </article>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="profile-history-empty">
+                No saved quiz attempts yet. Finish a brain quiz round while logged in to see scores here.
+            </div>
+            {% endif %}
+        </article>
+    </section>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/profile.js' %}"></script>
+{% endblock %}

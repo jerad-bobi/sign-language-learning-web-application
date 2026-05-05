@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sharpen Your Brain{% endblock %}
+
+{% block body_class %}page--brain{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/sharpen_your_brain.css' %}">
+{% endblock %}
+
+{% block content %}
+<form class="visually-hidden" aria-hidden="true">
+    {% csrf_token %}
+</form>
+
+<section class="brain-hero panel-surface panel-surface--hero" aria-label="Sharpen Your Brain page">
+    <p class="eyebrow">Quiz</p>
+    <h1 class="display-title">Start the sign quiz.</h1>
+    <p class="lead-copy">Answer quickly before the timer runs out.</p>
+    <div class="action-row">
+        <button class="button button--primary" type="button" id="brain-launch-quiz">Start Quiz</button>
+    </div>
+</section>
+
+<section class="panel-surface brain-syllabus" aria-label="Syllabus topics">
+    <h2>Choose a syllabus</h2>
+    <p class="lead-copy">Select one topic to learn before taking the quiz.</p>
+    {% if letters_and_numbers_progress %}
+    <div class="brain-syllabus__resume-card">
+        <div>
+            <p class="brain-syllabus__resume-eyebrow">Saved lesson</p>
+            <h3>Continue Letters and Numbers</h3>
+            <p>You paused at lesson {{ letters_and_numbers_progress.current_term_index|add:1 }} of {{ letters_and_numbers_progress.total_terms }} on {{ letters_and_numbers_progress.current_term }}.</p>
+        </div>
+        <a class="button button--primary" href="{% url 'syllabus_letters_and_numbers' %}">Continue lesson</a>
+    </div>
+    {% endif %}
+    <div class="brain-syllabus__grid">
+        <a class="button button--secondary" href="{% url 'syllabus_letters_and_numbers' %}">Letters and Numbers</a>
+        <a class="button button--secondary" href="{% url 'syllabus_greetings_and_personal' %}">Greetings and Personal</a>
+        <a class="button button--secondary" href="{% url 'syllabus_polite_phrases' %}">Polite Phrases</a>
+        <a class="button button--secondary" href="{% url 'syllabus_daily_life' %}">Daily Life</a>
+        <a class="button button--secondary" href="{% url 'syllabus_basic_adjectives' %}">Basic Adjectives</a>
+    </div>
+</section>
+
+<section class="brain-leaderboard-layout" aria-label="Global quiz leaderboard">
+    <article class="panel-surface brain-leaderboard-card" data-leaderboard-url="{% url 'brain_quiz_leaderboard' %}">
+        <div class="brain-leaderboard-card__header">
+            <div>
+                <h2>Leaderboard</h2>
+            </div>
+            <div class="brain-leaderboard-card__meta">
+                <span class="status-pill" id="brain-leaderboard-status">Live refresh every 15s</span>
+                <p id="brain-leaderboard-updated">Waiting for leaderboard...</p>
+            </div>
+        </div>
+
+        <div class="brain-leaderboard-summary" id="brain-leaderboard-summary">
+            <div class="brain-leaderboard-summary__item">
+                <span>Players ranked</span>
+                <strong id="brain-leaderboard-player-count">0</strong>
+            </div>
+            <div class="brain-leaderboard-summary__item">
+                <span>Your position</span>
+                <strong id="brain-leaderboard-current-rank">Unranked</strong>
+            </div>
+        </div>
+
+        <div class="brain-leaderboard-table" id="brain-leaderboard-table" role="list">
+            <div class="brain-leaderboard-empty">Loading leaderboard...</div>
+        </div>
+    </article>
+</section>
+
+<div class="quiz-modal" id="brain-quiz-modal" aria-hidden="true" data-quiz-url="{% url 'brain_quiz_question' %}" data-save-attempt-url="{% url 'brain_quiz_attempt_save' %}">
+    <div class="quiz-modal__backdrop" data-close-quiz="true"></div>
+    <section class="quiz-modal__dialog panel-surface" role="dialog" aria-modal="true" aria-labelledby="brain-quiz-title">
+        <button class="quiz-modal__close" type="button" id="brain-close-quiz" aria-label="Close quiz">Close</button>
+
+        <div class="quiz-start-screen" id="brain-start-screen">
+            <h2 id="brain-quiz-title">Ready to begin?</h2>
+            <p>The timer starts full and keeps dropping until the round ends.</p>
+            <button class="button button--primary" type="button" id="brain-start-quiz">Begin round</button>
+        </div>
+
+        <div class="quiz-game" id="brain-quiz-game" hidden>
+            <div class="quiz-hud">
+                <div class="quiz-stat"><span>Score</span><strong id="brain-score">0</strong></div>
+                <div class="quiz-stat"><span>Answered</span><strong id="brain-answered">0</strong></div>
+                <div class="quiz-stat"><span>Speed</span><strong id="brain-speed">1.0x</strong></div>
+            </div>
+
+            <div class="quiz-timer" aria-label="Quiz timer">
+                <div class="quiz-timer__bar">
+                    <div class="quiz-timer__fill" id="brain-timer-fill"></div>
+                </div>
+                <div class="quiz-timer__meta">
+                    <span>Timer</span>
+                    <strong id="brain-timer-label">100%</strong>
+                </div>
+            </div>
+
+            <article class="quiz-question-box">
+                <div class="quiz-video-shell" id="brain-video-shell">
+                    <div class="quiz-video-shell__loading">Loading question...</div>
+                </div>
+
+                <div class="quiz-copy">
+                    <h2 id="brain-question-prompt">What does this sign mean?</h2>
+                    <p class="quiz-feedback" id="brain-feedback">Choose the matching answer.</p>
+                </div>
+
+                <div class="quiz-options" id="brain-options"></div>
+            </article>
+        </div>
+
+        <div class="quiz-end-screen" id="brain-end-screen" hidden>
+            <h2>Round finished.</h2>
+            <p id="brain-end-summary">You answered 0 questions.</p>
+            <div class="action-row">
+                <button class="button button--primary" type="button" id="brain-restart-quiz">Play again</button>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/sharpen_your_brain.js' %}"></script>
+{% endblock %}

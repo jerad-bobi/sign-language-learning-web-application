@@ -1,0 +1,203 @@
+.profile-layout {
+    display: grid;
+    gap: 20px;
+}
+
+.profile-history-grid {
+    display: block;
+}
+
+.profile-card-shell {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 28px 32px;
+}
+
+.profile-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.profile-card__avatar {
+    display: grid;
+    place-items: center;
+    width: 72px;
+    height: 72px;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, var(--accent), #6d4fff);
+    color: #fff;
+    font-size: 1.7rem;
+    font-weight: 800;
+    box-shadow: 0 4px 24px var(--accent-glow);
+    flex-shrink: 0;
+}
+
+.profile-card__label {
+    margin: 0 0 4px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent-light);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.profile-card__name {
+    margin: 0 0 6px;
+    font-size: 1.7rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+}
+
+.profile-card__meta {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.profile-history-card {
+    padding: 28px;
+    margin-top: 0;
+}
+
+.profile-history-card__header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 20px;
+}
+
+.profile-history-card__header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+}
+
+.profile-history-card__caption {
+    margin: 6px 0 0;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.profile-history-item__eyebrow {
+    display: block;
+    margin-bottom: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent-light);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.profile-filter-form {
+    display: grid;
+    gap: 6px;
+    min-width: min(100%, 240px);
+}
+
+.profile-filter-form__label {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.profile-filter-form__controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.profile-filter-form__select {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 32px 10px 14px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    color: var(--text-primary);
+    font: inherit;
+    font-size: 0.875rem;
+    cursor: pointer;
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--text-muted) 50%), linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
+    background-position: calc(100% - 16px) calc(50% - 2px), calc(100% - 10px) calc(50% - 2px);
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+}
+
+.profile-history-list {
+    display: grid;
+    gap: 10px;
+}
+
+.profile-history-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 20px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    transition: border-color 0.2s, transform 0.2s;
+}
+
+.profile-history-item:hover {
+    border-color: var(--border-strong);
+    transform: translateY(-1px);
+}
+
+.profile-history-item__score {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.profile-history-item__date {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.profile-history-empty {
+    padding: 40px 24px;
+    border: 1px dashed var(--border-subtle);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    text-align: center;
+    font-size: 0.95rem;
+}
+
+@media (max-width: 720px) {
+    .profile-card-shell {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+    .profile-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .profile-history-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .profile-history-card__header,
+    .profile-filter-form__controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .profile-history-item__date { text-align: left; }
+}
