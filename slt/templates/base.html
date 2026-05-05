@@ -12,6 +12,8 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body class="site-body {% block body_class %}{% endblock %}">
+    <!-- Particle Background -->
+    <div class="particles-bg" id="particles-bg"></div>
 
     <nav class="navbar" id="navbar">
         <div class="container">
@@ -36,6 +38,64 @@
             </button>
         </div>
     </nav>
+
+    <!-- Sidebar Navigation for better flow -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-brand">
+                <span class="brand-icon brand-icon--sm">HA</span>
+                <span class="sidebar-title">Learning Path</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <ul class="sidebar-menu">
+                <li class="sidebar-item {% if active_page == 'home' %}sidebar-item--active{% endif %}">
+                    <a href="{% url 'home' %}" class="sidebar-link">
+                        <span class="sidebar-icon">🏠</span>
+                        <span class="sidebar-text">Home</span>
+                        <span class="sidebar-arrow">→</span>
+                    </a>
+                </li>
+                <li class="sidebar-item {% if active_page == 'vocabularies' %}sidebar-item--active{% endif %}">
+                    <a href="{% url 'learn_vocabularies' %}" class="sidebar-link">
+                        <span class="sidebar-icon">📚</span>
+                        <span class="sidebar-text">Learn Vocabulary</span>
+                        <span class="sidebar-arrow">→</span>
+                    </a>
+                </li>
+                <li class="sidebar-item {% if active_page == 'practice' %}sidebar-item--active{% endif %}">
+                    <a href="{% url 'lets_practice' %}" class="sidebar-link">
+                        <span class="sidebar-icon">✋</span>
+                        <span class="sidebar-text">Practice Signs</span>
+                        <span class="sidebar-arrow">→</span>
+                    </a>
+                </li>
+                <li class="sidebar-item {% if active_page == 'brain' %}sidebar-item--active{% endif %}">
+                    <a href="{% url 'sharpen_your_brain' %}" class="sidebar-link">
+                        <span class="sidebar-icon">🎯</span>
+                        <span class="sidebar-text">Test Skills</span>
+                        <span class="sidebar-arrow">→</span>
+                    </a>
+                </li>
+                <li class="sidebar-item {% if active_page == 'profile' %}sidebar-item--active{% endif %}">
+                    <a href="{% url 'account_access' %}" class="sidebar-link">
+                        <span class="sidebar-icon">👤</span>
+                        <span class="sidebar-text">Profile</span>
+                        <span class="sidebar-arrow">→</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        {% if dashboard_user %}
+        <div class="sidebar-progress">
+            <h3 class="sidebar-progress-title">Your Progress</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ syllabus_progress.current_term_index|default:0 }}/{{ syllabus_progress.total_terms|default:10 }} * 100}}%"></div>
+            </div>
+            <p class="progress-text">{{ syllabus_progress.current_term_index|default:0 }}/{{ syllabus_progress.total_terms|default:10 }} lessons completed</p>
+        </div>
+        {% endif %}
+    </aside>
 
     <main class="page-frame">
         <div class="container">
@@ -69,12 +129,85 @@
         const nt = document.getElementById('navToggle');
         const nl = document.getElementById('navLinks');
         nt.addEventListener('click', () => { nt.classList.toggle('active'); nl.classList.toggle('open'); });
+
+        // Sidebar toggle functionality
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.createElement('button');
+        sidebarToggle.className = 'sidebar-toggle';
+        sidebarToggle.innerHTML = '☰';
+        sidebarToggle.setAttribute('aria-label', 'Toggle sidebar');
+        document.body.appendChild(sidebarToggle);
+
+        sidebarToggle.addEventListener('click', () => {
+            document.body.classList.toggle('sidebar-open');
+        });
+
+        // Close sidebar when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+                document.body.classList.remove('sidebar-open');
+            }
+        });
+
         nl.querySelectorAll('a').forEach(a => a.addEventListener('click', () => { nt.classList.remove('active'); nl.classList.remove('open'); }));
+
+        // Enhanced animations
         const pRM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         if(!pRM){
-            const obs = new IntersectionObserver(es => { es.forEach(e => { if(e.isIntersecting){ const sib = e.target.parentElement.querySelectorAll('.fade-up:not(.visible)'); const i = Array.from(sib).indexOf(e.target); setTimeout(()=>e.target.classList.add('visible'), Math.max(0,i)*100); obs.unobserve(e.target); }}); }, {threshold:0.1, rootMargin:'0px 0px -30px 0px'});
+            const obs = new IntersectionObserver(es => {
+                es.forEach(e => {
+                    if(e.isIntersecting){
+                        const sib = e.target.parentElement.querySelectorAll('.fade-up:not(.visible)');
+                        const i = Array.from(sib).indexOf(e.target);
+                        setTimeout(()=>e.target.classList.add('visible'), Math.max(0,i)*150);
+                        obs.unobserve(e.target);
+                    }
+                });
+            }, {threshold:0.1, rootMargin:'0px 0px -50px 0px'});
             document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
-        } else { document.querySelectorAll('.fade-up').forEach(el => el.classList.add('visible')); }
+
+            // Add stagger animation to sidebar items
+            document.querySelectorAll('.sidebar-item').forEach((item, index) => {
+                item.style.animationDelay = `${index * 0.1}s`;
+                item.classList.add('fade-in-up');
+            });
+        } else {
+            document.querySelectorAll('.fade-up').forEach(el => el.classList.add('visible'));
+        }
+
+        // Page transition effect
+        document.querySelectorAll('a[href]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (this.hostname === window.location.hostname && !this.hasAttribute('download')) {
+                    e.preventDefault();
+                    document.body.classList.add('page-transitioning');
+                    setTimeout(() => {
+                        window.location.href = this.href;
+                    }, 300);
+                }
+            });
+        });
+
+        // Create floating particles
+        function createParticles() {
+            const particlesBg = document.getElementById('particles-bg');
+            const particleCount = 20;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.width = Math.random() * 4 + 2 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particlesBg.appendChild(particle);
+            }
+        }
+
+        if (!pRM) {
+            createParticles();
+        }
     })();
     </script>
     {% block scripts %}{% endblock %}

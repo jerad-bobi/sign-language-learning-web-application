@@ -14,16 +14,16 @@
     {% csrf_token %}
 </form>
 
-<section class="brain-hero panel-surface panel-surface--hero" aria-label="Sharpen Your Brain page">
+<section class="brain-hero panel-surface panel-surface--hero fade-up bounce-in" aria-label="Sharpen Your Brain page">
     <p class="eyebrow">Quiz</p>
-    <h1 class="display-title">Start the sign quiz.</h1>
+    <h1 class="display-title gradient-text">Start the sign quiz.</h1>
     <p class="lead-copy">Answer quickly before the timer runs out.</p>
     <div class="action-row">
-        <button class="button button--primary" type="button" id="brain-launch-quiz">Start Quiz</button>
+        <button class="button button--primary hover-lift" type="button" id="brain-launch-quiz">Start Quiz</button>
     </div>
 </section>
 
-<section class="panel-surface brain-syllabus" aria-label="Syllabus topics">
+<section class="panel-surface brain-syllabus fade-up hover-glow" aria-label="Syllabus topics">
     <h2>Choose a syllabus</h2>
     <p class="lead-copy">Select one topic to learn before taking the quiz.</p>
     {% if letters_and_numbers_progress %}

@@ -3,7 +3,14 @@
 }
 
 .home-hero .lead-copy {
-    margin: 0 auto;
+    margin: 0 auto 32px;
+}
+
+.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
 }
 
 /* ===== DASHBOARD ===== */
