@@ -99,10 +99,10 @@ WSGI_APPLICATION = 'slt.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('DB_NAME', 'slt_db'),
+        'NAME': os.environ.get('railway', 'slt_db'),
         'USER': os.environ.get('DB_USER', 'root'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PASSWORD': os.environ.get('GFNUGZjkbbLttxTmFXeyzegztWOoQOoq', ''),
+        'HOST': os.environ.get('mysql.railway.internal', 'localhost'),
         'PORT': os.environ.get('DB_PORT', '3306'),
         'OPTIONS': {
             'charset': 'utf8mb4',
