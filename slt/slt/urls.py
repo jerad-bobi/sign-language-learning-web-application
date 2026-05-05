@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from accounts.views import about_me, account_access, forgot_password_view, login_view, logout_view, register_view
+from accounts.views import about_me, account_access, delete_account_view, edit_profile_view, forgot_password_view, login_view, logout_view, register_view
 from .views import (
     brain_quiz_attempt_save,
     brain_quiz_leaderboard,
@@ -31,7 +31,6 @@ from .views import (
     save_skeletal_hand_capture,
     save_syllabus_progress,
     sharpen_your_brain,
-    syllabus_basic_adjectives,
     syllabus_daily_life,
     syllabus_greetings_and_personal,
     syllabus_letters_and_numbers,
@@ -57,8 +56,9 @@ urlpatterns = [
     path('syllabus/greetings-and-personal/', syllabus_greetings_and_personal, name='syllabus_greetings_and_personal'),
     path('syllabus/polite-phrases/', syllabus_polite_phrases, name='syllabus_polite_phrases'),
     path('syllabus/daily-life/', syllabus_daily_life, name='syllabus_daily_life'),
-    path('syllabus/basic-adjectives/', syllabus_basic_adjectives, name='syllabus_basic_adjectives'),
     path('account/', account_access, name='account_access'),
+    path('edit-profile/', edit_profile_view, name='edit_profile'),
+    path('delete-account/', delete_account_view, name='delete_account'),
     path('register/', register_view, name='register'),
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),

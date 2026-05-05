@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Profile{% endblock %}
+
+{% block body_class %}page--edit-profile{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/edit_profile.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="edit-profile-layout">
+    <section class="panel-surface edit-profile-card">
+        <div class="edit-profile-card__intro">
+            <p class="eyebrow">My Account</p>
+            <h1 class="display-title">Edit Profile</h1>
+            <p class="lead-copy">Update your account information below.</p>
+        </div>
+
+        {% if edit_success %}
+        <p class="edit-profile-success">Your profile has been updated successfully.</p>
+        {% endif %}
+
+        <form method="post" action="{% url 'edit_profile' %}" class="auth-form">
+            {% csrf_token %}
+            <label class="auth-field">
+                <span>Real Name</span>
+                {{ form.real_name }}
+                {% if form.real_name.errors %}<small class="auth-error">{{ form.real_name.errors|join:', ' }}</small>{% endif %}
+            </label>
+            <label class="auth-field">
+                <span>Username</span>
+                {{ form.username }}
+                {% if form.username.errors %}<small class="auth-error">{{ form.username.errors|join:', ' }}</small>{% endif %}
+            </label>
+            <label class="auth-field">
+                <span>Email</span>
+                {{ form.email }}
+                {% if form.email.errors %}<small class="auth-error">{{ form.email.errors|join:', ' }}</small>{% endif %}
+            </label>
+
+            <hr class="edit-profile-divider">
+
+            <label class="auth-field">
+                <span>New Password <small class="edit-profile-optional">(leave blank to keep current)</small></span>
+                {{ form.new_password }}
+                {% if form.new_password.errors %}<small class="auth-error">{{ form.new_password.errors|join:', ' }}</small>{% endif %}
+            </label>
+            <label class="auth-field">
+                <span>Confirm New Password</span>
+                {{ form.confirm_password }}
+                {% if form.confirm_password.errors %}<small class="auth-error">{{ form.confirm_password.errors|join:', ' }}</small>{% endif %}
+            </label>
+
+            {% if form.non_field_errors %}
+            <p class="auth-error auth-error--full">{{ form.non_field_errors|join:', ' }}</p>
+            {% endif %}
+
+            <div class="edit-profile-actions">
+                <button type="submit" class="button button--primary">Save Changes</button>
+                <a href="{% url 'about_me' %}" class="button button--secondary">Cancel</a>
+            </div>
+        </form>
+
+        <div class="edit-profile-danger-zone">
+            <h2 class="edit-profile-danger-zone__title">Delete Account</h2>
+            <p class="edit-profile-danger-zone__desc">This is permanent and cannot be undone. All your quiz attempts, progress, and account data will be removed.</p>
+
+            {% if delete_error %}
+            <p class="edit-profile-delete-error">{{ delete_error }}</p>
+            {% endif %}
+
+            <form method="post" action="{% url 'delete_account' %}" class="auth-form edit-profile-delete-form" onsubmit="return confirm('Permanently delete your account? This cannot be undone.');">
+                {% csrf_token %}
+                <label class="auth-field">
+                    <span>Enter your password to confirm</span>
+                    <input type="password" name="confirm_password" class="auth-input" placeholder="Your current password" required autocomplete="current-password">
+                </label>
+                <button type="submit" class="button button--danger">Delete My Account</button>
+            </form>
+        </div>
+    </section>
+</section>
+{% endblock %}

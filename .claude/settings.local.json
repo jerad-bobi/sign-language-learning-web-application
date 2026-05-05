@@ -5,7 +5,8 @@
       "Bash(Select-Object FullName)",
       "Bash(ConvertTo-Csv -NoTypeInformation)",
       "Bash(Select-Object -Skip 1)",
-      "PowerShell(Get-Content \"c:\\\\Users\\\\parag\\\\Desktop\\\\slt_final_main\\\\slt\\\\requirements.txt\" | ForEach-Object { \"'$_'\" })"
+      "PowerShell(Get-Content \"c:\\\\Users\\\\parag\\\\Desktop\\\\slt_final_main\\\\slt\\\\requirements.txt\" | ForEach-Object { \"'$_'\" })",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\parag\\\\Desktop\\\\sign-language-learning-web-application\\\\slt\" -Recurse -Filter \"accounts\" -Directory)"
     ]
   }
 }

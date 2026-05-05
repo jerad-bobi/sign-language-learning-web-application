@@ -21,6 +21,9 @@ SESSION_ACCOUNT_ID = 'account_id'
 SKELETAL_CAPTURE_MAX_BYTES = 5 * 1024 * 1024
 SYLLABUS_PROGRESS_SESSION_KEY = 'syllabus_progress'
 LETTERS_AND_NUMBERS_SYLLABUS_KEY = 'letters-and-numbers'
+GREETINGS_AND_PERSONAL_SYLLABUS_KEY = 'greetings-and-personal'
+POLITE_PHRASES_SYLLABUS_KEY = 'polite-phrases'
+DAILY_LIFE_SYLLABUS_KEY = 'daily-life'
 AMBIGUOUS_SIGN_CONTEXTS = {
     frozenset({'2', 'V'}): {
         'alphabet': 'V',
@@ -37,6 +40,18 @@ def _normalize_sign_folder_name(raw_name: str) -> str:
 
 def _get_letters_and_numbers_terms() -> list[str]:
     return list(string.ascii_uppercase) + [str(number) for number in range(10)]
+
+
+def _get_greetings_and_personal_terms() -> list[str]:
+    return ['Hello', 'Good', 'Morning', 'Afternoon', 'Night', 'Okay', 'Nice', 'To', 'Meet', 'You', 'Goodbye', 'Me', 'Name', 'Age', 'Live', 'Mother', 'Father', 'Brother', 'Sister', 'Friend']
+
+
+def _get_polite_phrases_terms() -> list[str]:
+    return ['Love', 'Thank', 'Please', 'Sorry', 'Excuse', 'Wait', 'Help', 'Yes', 'No', 'Can', 'Cannot']
+
+
+def _get_daily_life_terms() -> list[str]:
+    return ['Today', 'Tomorrow', 'Yesterday', 'Eat', 'Drink', 'Sleep', 'Go', 'Come', 'Want', 'Like', 'Hate', 'Work', 'Play', 'Study', 'Wake', 'Happy', 'Sad', 'Price', 'What', 'Who', 'When', 'Why', 'How']
 
 
 def _clamp_syllabus_term_index(raw_index, terms: list[str]) -> int:
@@ -120,7 +135,6 @@ _SYLLABUS_URL_NAMES = {
     'greetings-and-personal': 'syllabus_greetings_and_personal',
     'polite-phrases': 'syllabus_polite_phrases',
     'daily-life': 'syllabus_daily_life',
-    'basic-adjectives': 'syllabus_basic_adjectives',
 }
 
 
@@ -532,10 +546,16 @@ def save_syllabus_progress(request, syllabus_key: str):
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
-    if syllabus_key != LETTERS_AND_NUMBERS_SYLLABUS_KEY:
+    if syllabus_key == LETTERS_AND_NUMBERS_SYLLABUS_KEY:
+        terms = _get_letters_and_numbers_terms()
+    elif syllabus_key == GREETINGS_AND_PERSONAL_SYLLABUS_KEY:
+        terms = _get_greetings_and_personal_terms()
+    elif syllabus_key == POLITE_PHRASES_SYLLABUS_KEY:
+        terms = _get_polite_phrases_terms()
+    elif syllabus_key == DAILY_LIFE_SYLLABUS_KEY:
+        terms = _get_daily_life_terms()
+    else:
         return JsonResponse({'error': 'Unknown syllabus.'}, status=404)
-
-    terms = _get_letters_and_numbers_terms()
 
     try:
         payload = json.loads(request.body.decode('utf-8'))
@@ -583,59 +603,70 @@ def syllabus_letters_and_numbers(request):
 
 
 def syllabus_greetings_and_personal(request):
+    syllabus_terms = _get_greetings_and_personal_terms()
+    progress = _get_syllabus_progress(request, GREETINGS_AND_PERSONAL_SYLLABUS_KEY, syllabus_terms)
+    initial_term_index = progress['current_term_index'] if progress else 0
+
     return render(
         request,
-        'page.html',
+        'syllabus_greetings_and_personal.html',
         {
             'active_page': 'brain',
             'is_syllabus': True,
             'page_title': 'Greetings and Personal',
             'page_description': 'Practice signs for greetings and personal introductions.',
             'cutscene_caption': 'Preparing conversational starter signs...',
+            'lesson_term': syllabus_terms[initial_term_index],
+            'initial_term_index': initial_term_index,
+            'syllabus_progress': progress,
+            'syllabus_terms': syllabus_terms,
         },
     )
 
 
 def syllabus_polite_phrases(request):
+    syllabus_terms = _get_polite_phrases_terms()
+    progress = _get_syllabus_progress(request, POLITE_PHRASES_SYLLABUS_KEY, syllabus_terms)
+    initial_term_index = progress['current_term_index'] if progress else 0
+
     return render(
         request,
-        'page.html',
+        'syllabus_polite_phrases.html',
         {
             'active_page': 'brain',
             'is_syllabus': True,
             'page_title': 'Polite Phrases',
             'page_description': 'Review common polite expressions used in daily conversations.',
             'cutscene_caption': 'Calibrating courtesy expressions...',
+            'lesson_term': syllabus_terms[initial_term_index],
+            'initial_term_index': initial_term_index,
+            'syllabus_progress': progress,
+            'syllabus_terms': syllabus_terms,
         },
     )
 
 
 def syllabus_daily_life(request):
+    syllabus_terms = _get_daily_life_terms()
+    progress = _get_syllabus_progress(request, DAILY_LIFE_SYLLABUS_KEY, syllabus_terms)
+    initial_term_index = progress['current_term_index'] if progress else 0
+
     return render(
         request,
-        'page.html',
+        'syllabus_daily_life.html',
         {
             'active_page': 'brain',
             'is_syllabus': True,
             'page_title': 'Daily Life',
             'page_description': 'Explore practical signs used in routine day-to-day activities.',
             'cutscene_caption': 'Loading daily routine sign missions...',
+            'lesson_term': syllabus_terms[initial_term_index],
+            'initial_term_index': initial_term_index,
+            'syllabus_progress': progress,
+            'syllabus_terms': syllabus_terms,
         },
     )
 
-
-def syllabus_basic_adjectives(request):
-    return render(
-        request,
-        'page.html',
-        {
-            'active_page': 'brain',
-            'is_syllabus': True,
-            'page_title': 'Basic Adjectives',
-            'page_description': 'Study beginner adjective signs for common descriptions.',
-            'cutscene_caption': 'Generating descriptive sign challenges...',
-        },
-    )
 
 
 def about_me(request):

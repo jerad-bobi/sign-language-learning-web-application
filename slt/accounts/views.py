@@ -8,7 +8,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
-from .forms import ForgotPasswordForm, LoginForm, RegisterForm
+from .forms import EditProfileForm, ForgotPasswordForm, LoginForm, RegisterForm
 from .models import Account, BrainQuizAttempt
 
 
@@ -236,6 +236,77 @@ def forgot_password_view(request: HttpRequest) -> HttpResponse:
             'forgot_password_error': forgot_password_error,
         },
     )
+
+
+def edit_profile_view(request: HttpRequest) -> HttpResponse:
+    account = _get_current_account(request)
+    if not account:
+        return redirect('account_access')
+
+    _touch_account(account)
+    delete_error = request.session.pop('delete_error', None)
+    edit_success = False
+
+    if request.method == 'POST':
+        form = EditProfileForm(request.POST, account=account)
+        if form.is_valid():
+            new_password = form.cleaned_data.get('new_password')
+            account.real_name = form.cleaned_data['real_name'].strip()
+            account.username = form.cleaned_data['username'].strip()
+            account.email = form.cleaned_data['email'].strip().lower()
+            fields_to_save = ['real_name', 'username', 'email']
+            if new_password:
+                account.password = make_password(new_password)
+                fields_to_save.append('password')
+            account.save(update_fields=fields_to_save)
+            edit_success = True
+            form = EditProfileForm(
+                account=account,
+                initial={
+                    'real_name': account.real_name,
+                    'username': account.username,
+                    'email': account.email,
+                },
+            )
+    else:
+        form = EditProfileForm(
+            account=account,
+            initial={
+                'real_name': account.real_name,
+                'username': account.username,
+                'email': account.email,
+            },
+        )
+
+    return render(
+        request,
+        'edit_profile.html',
+        {
+            'active_page': 'about',
+            'account': account,
+            'form': form,
+            'edit_success': edit_success,
+            'delete_error': delete_error,
+        },
+    )
+
+
+def delete_account_view(request: HttpRequest) -> HttpResponse:
+    if request.method != 'POST':
+        return redirect('edit_profile')
+
+    account = _get_current_account(request)
+    if not account:
+        return redirect('account_access')
+
+    password = request.POST.get('confirm_password', '')
+    if not check_password(password, account.password):
+        request.session['delete_error'] = 'Incorrect password. Account was not deleted.'
+        return redirect('edit_profile')
+
+    account.delete()
+    request.session.flush()
+    return redirect('account_access')
 
 
 def about_me(request: HttpRequest) -> HttpResponse:

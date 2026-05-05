@@ -4,6 +4,54 @@ from django.contrib.auth.password_validation import validate_password
 from .models import Account
 
 
+class EditProfileForm(forms.Form):
+    real_name = forms.CharField(max_length=150)
+    username = forms.CharField(max_length=150)
+    email = forms.EmailField()
+    new_password = forms.CharField(widget=forms.PasswordInput, required=False)
+    confirm_password = forms.CharField(widget=forms.PasswordInput, required=False)
+
+    def __init__(self, *args, account=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.account = account
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'auth-input'})
+
+    def clean_username(self):
+        username = self.cleaned_data['username'].strip()
+        qs = Account.objects.filter(username__iexact=username)
+        if self.account:
+            qs = qs.exclude(pk=self.account.pk)
+        if qs.exists():
+            raise forms.ValidationError('Username already taken.')
+        return username
+
+    def clean_email(self):
+        email = self.cleaned_data['email'].strip().lower()
+        qs = Account.objects.filter(email__iexact=email)
+        if self.account:
+            qs = qs.exclude(pk=self.account.pk)
+        if qs.exists():
+            raise forms.ValidationError('Email already used.')
+        return email
+
+    def clean(self):
+        cleaned_data = super().clean()
+        new_password = cleaned_data.get('new_password')
+        confirm_password = cleaned_data.get('confirm_password')
+
+        if new_password or confirm_password:
+            if new_password != confirm_password:
+                self.add_error('confirm_password', 'Passwords do not match.')
+            if new_password and not self.errors.get('new_password'):
+                try:
+                    validate_password(new_password)
+                except forms.ValidationError as error:
+                    self.add_error('new_password', error)
+
+        return cleaned_data
+
+
 class RegisterForm(forms.ModelForm):
     confirm_password = forms.CharField(widget=forms.PasswordInput)
     password = forms.CharField(widget=forms.PasswordInput)

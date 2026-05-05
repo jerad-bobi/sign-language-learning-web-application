@@ -59,6 +59,13 @@
     font-size: 0.9rem;
 }
 
+.profile-card-actions {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+
 .profile-history-card {
     padding: 28px;
     margin-top: 0;
