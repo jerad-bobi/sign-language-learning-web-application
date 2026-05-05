@@ -1,5 +1,5 @@
 [deploy]
-startCommand = "cd slt && python manage.py migrate --noinput && gunicorn slt.wsgi"
+startCommand = "python manage.py migrate --noinput && gunicorn slt.wsgi"
 
 [deploy.envVars]
 DB_HOST = "${{MySQL.MYSQLHOST}}"
