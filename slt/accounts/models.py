@@ -10,6 +10,8 @@ class Account(models.Model):
     verification = models.BooleanField(default=False)
     date_created = models.DateTimeField(auto_now_add=True)
     last_accessed = models.DateTimeField(default=timezone.now)
+    login_streak = models.PositiveIntegerField(default=0)
+    last_login_date = models.DateField(null=True, blank=True, default=None)
 
     class Meta:
         db_table = 'user_account'

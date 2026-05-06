@@ -1,4 +1,5 @@
 import time
+from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.auth.hashers import check_password, make_password
@@ -105,8 +106,23 @@ def _get_current_account(request: HttpRequest) -> Account | None:
 
 
 def _touch_account(account: Account) -> None:
+    today = timezone.localdate()
     account.last_accessed = timezone.now()
-    account.save(update_fields=['last_accessed'])
+    update_fields = ['last_accessed']
+
+    if account.last_login_date is None:
+        account.login_streak = 1
+        account.last_login_date = today
+        update_fields.extend(['login_streak', 'last_login_date'])
+    elif account.last_login_date < today:
+        if account.last_login_date == today - timedelta(days=1):
+            account.login_streak += 1
+        else:
+            account.login_streak = 1
+        account.last_login_date = today
+        update_fields.extend(['login_streak', 'last_login_date'])
+
+    account.save(update_fields=update_fields)
 
 
 def account_access(request: HttpRequest) -> HttpResponse:

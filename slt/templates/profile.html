@@ -18,6 +18,11 @@
                 <p class="profile-card__label">About Me</p>
                 <h2 class="profile-card__name">{{ account.username }}</h2>
                 <p class="profile-card__meta">Quiz attempts: {{ quiz_attempt_count }}{% if best_score is not None %} · Best score: {{ best_score }}{% endif %}</p>
+                <p class="profile-card__streak">
+                    <span class="streak-badge{% if account.login_streak >= 7 %} streak-badge--hot{% endif %}">
+                        &#x1F525; {{ account.login_streak }} day streak
+                    </span>
+                </p>
             </div>
         </div>
         <div class="profile-card-actions">

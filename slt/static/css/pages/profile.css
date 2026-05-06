@@ -59,6 +59,31 @@
     font-size: 0.9rem;
 }
 
+.profile-card__streak {
+    margin: 6px 0 0;
+}
+
+.streak-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+.streak-badge--hot {
+    background: linear-gradient(135deg, #ff6a00 0%, #ee0979 100%);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(238, 9, 121, 0.35);
+}
+
 .profile-card-actions {
     display: flex;
     gap: 10px;
