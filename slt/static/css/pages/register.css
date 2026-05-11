@@ -1,37 +1,63 @@
+/* ===== REGISTER PAGE ===== */
+
 .register-layout {
     display: flex;
     align-items: center;
     justify-content: center;
     min-height: 60vh;
+    padding: 24px 0;
 }
 
 .register-form-card {
-    padding: 44px 40px;
-    max-width: 680px;
+    padding: 52px 48px;
+    max-width: 520px;
     width: 100%;
     margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+}
+
+.register-form-card::before {
+    content: '';
+    position: absolute;
+    top: -40%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 380px;
+    height: 380px;
+    background: radial-gradient(circle, rgba(232,121,249,0.08) 0%, transparent 65%);
+    pointer-events: none;
 }
 
 .register-form-card__intro {
-    margin-bottom: 28px;
+    margin-bottom: 32px;
     text-align: center;
+    position: relative;
 }
 
 .register-form-card__intro .eyebrow {
     justify-content: center;
 }
 
+.register-form-card__intro .display-title {
+    font-size: clamp(1.9rem, 4vw, 2.5rem);
+    margin-bottom: 10px;
+}
+
 .auth-form--register {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: grid;
+    gap: 14px;
 }
 
-.auth-form--register .auth-field,
-.auth-form--register .auth-error--full,
-.auth-form--register .button--full {
-    grid-column: 1 / -1;
+.auth-form--register .button--primary {
+    margin-top: 4px;
 }
 
-@media (max-width: 680px) {
-    .register-form-card { padding: 32px 24px; }
-    .auth-form--register { grid-template-columns: 1fr; }
+.auth-switch {
+    text-align: center;
+    margin-top: 20px;
+}
+
+@media (max-width: 540px) {
+    .register-form-card { padding: 36px 20px; }
 }

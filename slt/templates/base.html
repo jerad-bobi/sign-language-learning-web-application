@@ -7,21 +7,26 @@
     <title>{% block title %}Handspeak Atlas{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
 <body class="site-body {% block body_class %}{% endblock %}">
-    <!-- Particle Background -->
-    <div class="particles-bg" id="particles-bg"></div>
+
+    <!-- Aurora Orb Background -->
+    <div class="orbs-bg" aria-hidden="true">
+        <div class="orb orb--1"></div>
+        <div class="orb orb--2"></div>
+        <div class="orb orb--3"></div>
+    </div>
 
     <nav class="navbar" id="navbar">
         <div class="container">
-            <a href="{% url 'home' %}" class="nav-brand" aria-label="Go to homepage">
+            <a href="{% url 'home' %}" class="nav-brand" aria-label="Handspeak Atlas — go to homepage">
                 <span class="brand-icon">HA</span>
                 <span class="brand-name">Handspeak Atlas</span>
             </a>
-            <ul class="nav-links" id="navLinks">
+            <ul class="nav-links" id="navLinks" role="list">
                 <li><a href="{% url 'home' %}" class="{% if active_page == 'home' %}nav-link--active{% endif %}">Home</a></li>
                 <li><a href="{% url 'sharpen_your_brain' %}" class="{% if active_page == 'brain' %}nav-link--active{% endif %}">Quiz</a></li>
                 <li><a href="{% url 'lets_practice' %}" class="{% if active_page == 'practice' %}nav-link--active{% endif %}">Practice</a></li>
@@ -31,77 +36,55 @@
                 </li>
             </ul>
             <div class="nav-actions">
-                <a href="{% url 'account_access' %}" class="btn {% if active_page == 'about' %}btn-primary{% else %}btn-ghost{% endif %}">Account</a>
+                <a href="{% url 'account_access' %}" class="btn {% if active_page == 'about' or active_page == 'profile' %}btn-primary{% else %}btn-ghost{% endif %}">Account</a>
             </div>
-            <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
                 <span></span><span></span><span></span>
             </button>
         </div>
     </nav>
-
-    <!-- Sidebar Navigation for better flow -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-brand">
-                <span class="brand-icon brand-icon--sm">HA</span>
-                <span class="sidebar-title">Learning Path</span>
-            </div>
-        </div>
-        <nav class="sidebar-nav">
-            <ul class="sidebar-menu">
-                <li class="sidebar-item {% if active_page == 'home' %}sidebar-item--active{% endif %}">
-                    <a href="{% url 'home' %}" class="sidebar-link">
-                        <span class="sidebar-icon">🏠</span>
-                        <span class="sidebar-text">Home</span>
-                        <span class="sidebar-arrow">→</span>
-                    </a>
-                </li>
-                <li class="sidebar-item {% if active_page == 'vocabularies' %}sidebar-item--active{% endif %}">
-                    <a href="{% url 'learn_vocabularies' %}" class="sidebar-link">
-                        <span class="sidebar-icon">📚</span>
-                        <span class="sidebar-text">Learn Vocabulary</span>
-                        <span class="sidebar-arrow">→</span>
-                    </a>
-                </li>
-                <li class="sidebar-item {% if active_page == 'practice' %}sidebar-item--active{% endif %}">
-                    <a href="{% url 'lets_practice' %}" class="sidebar-link">
-                        <span class="sidebar-icon">✋</span>
-                        <span class="sidebar-text">Practice Signs</span>
-                        <span class="sidebar-arrow">→</span>
-                    </a>
-                </li>
-                <li class="sidebar-item {% if active_page == 'brain' %}sidebar-item--active{% endif %}">
-                    <a href="{% url 'sharpen_your_brain' %}" class="sidebar-link">
-                        <span class="sidebar-icon">🎯</span>
-                        <span class="sidebar-text">Test Skills</span>
-                        <span class="sidebar-arrow">→</span>
-                    </a>
-                </li>
-                <li class="sidebar-item {% if active_page == 'profile' %}sidebar-item--active{% endif %}">
-                    <a href="{% url 'account_access' %}" class="sidebar-link">
-                        <span class="sidebar-icon">👤</span>
-                        <span class="sidebar-text">Profile</span>
-                        <span class="sidebar-arrow">→</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-        {% if dashboard_user %}
-        <div class="sidebar-progress">
-            <h3 class="sidebar-progress-title">Your Progress</h3>
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: {{ syllabus_progress.current_term_index|default:0 }}/{{ syllabus_progress.total_terms|default:10 }} * 100}}%"></div>
-            </div>
-            <p class="progress-text">{{ syllabus_progress.current_term_index|default:0 }}/{{ syllabus_progress.total_terms|default:10 }} lessons completed</p>
-        </div>
-        {% endif %}
-    </aside>
 
     <main class="page-frame">
         <div class="container">
             {% block content %}{% endblock %}
         </div>
     </main>
+
+    <!-- Bottom Navigation — mobile only -->
+    <nav class="bottom-nav" aria-label="Mobile navigation">
+        <ul class="bottom-nav__list">
+            <li>
+                <a href="{% url 'home' %}" class="bottom-nav__link {% if active_page == 'home' %}bottom-nav__link--active{% endif %}">
+                    <span class="bottom-nav__icon" aria-hidden="true">🏠</span>
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'learn_vocabularies' %}" class="bottom-nav__link {% if active_page == 'vocabularies' %}bottom-nav__link--active{% endif %}">
+                    <span class="bottom-nav__icon" aria-hidden="true">📚</span>
+                    <span>Vocab</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'lets_practice' %}" class="bottom-nav__link {% if active_page == 'practice' %}bottom-nav__link--active{% endif %}">
+                    <span class="bottom-nav__icon" aria-hidden="true">✋</span>
+                    <span>Practice</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'sharpen_your_brain' %}" class="bottom-nav__link {% if active_page == 'brain' %}bottom-nav__link--active{% endif %}">
+                    <span class="bottom-nav__icon" aria-hidden="true">🎯</span>
+                    <span>Quiz</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'account_access' %}" class="bottom-nav__link {% if active_page == 'about' or active_page == 'profile' %}bottom-nav__link--active{% endif %}">
+                    <span class="bottom-nav__icon" aria-hidden="true">👤</span>
+                    <span>Account</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
 
     <footer class="site-footer">
         <div class="container">
@@ -123,91 +106,56 @@
     </footer>
 
     <script>
-    (function(){
+    (function () {
+        /* Navbar scroll */
         const nb = document.getElementById('navbar');
-        window.addEventListener('scroll', () => { nb.classList.toggle('scrolled', window.scrollY > 40); }, {passive:true});
+        window.addEventListener('scroll', () => { nb.classList.toggle('scrolled', window.scrollY > 40); }, { passive: true });
+
+        /* Mobile menu */
         const nt = document.getElementById('navToggle');
         const nl = document.getElementById('navLinks');
-        nt.addEventListener('click', () => { nt.classList.toggle('active'); nl.classList.toggle('open'); });
-
-        // Sidebar toggle functionality
-        const sidebar = document.getElementById('sidebar');
-        const sidebarToggle = document.createElement('button');
-        sidebarToggle.className = 'sidebar-toggle';
-        sidebarToggle.innerHTML = '☰';
-        sidebarToggle.setAttribute('aria-label', 'Toggle sidebar');
-        document.body.appendChild(sidebarToggle);
-
-        sidebarToggle.addEventListener('click', () => {
-            document.body.classList.toggle('sidebar-open');
+        nt.addEventListener('click', () => {
+            const open = nt.classList.toggle('active');
+            nl.classList.toggle('open', open);
+            nt.setAttribute('aria-expanded', open);
         });
+        nl.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+            nt.classList.remove('active');
+            nl.classList.remove('open');
+            nt.setAttribute('aria-expanded', 'false');
+        }));
 
-        // Close sidebar when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
-                document.body.classList.remove('sidebar-open');
-            }
-        });
-
-        nl.querySelectorAll('a').forEach(a => a.addEventListener('click', () => { nt.classList.remove('active'); nl.classList.remove('open'); }));
-
-        // Enhanced animations
+        /* Fade-up scroll observer */
         const pRM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        if(!pRM){
-            const obs = new IntersectionObserver(es => {
-                es.forEach(e => {
-                    if(e.isIntersecting){
-                        const sib = e.target.parentElement.querySelectorAll('.fade-up:not(.visible)');
-                        const i = Array.from(sib).indexOf(e.target);
-                        setTimeout(()=>e.target.classList.add('visible'), Math.max(0,i)*150);
+        if (!pRM) {
+            const obs = new IntersectionObserver(entries => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) {
+                        const siblings = e.target.parentElement.querySelectorAll('.fade-up:not(.visible)');
+                        const i = Array.from(siblings).indexOf(e.target);
+                        setTimeout(() => e.target.classList.add('visible'), Math.max(0, i) * 90);
                         obs.unobserve(e.target);
                     }
                 });
-            }, {threshold:0.1, rootMargin:'0px 0px -50px 0px'});
+            }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
             document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
-
-            // Add stagger animation to sidebar items
-            document.querySelectorAll('.sidebar-item').forEach((item, index) => {
-                item.style.animationDelay = `${index * 0.1}s`;
-                item.classList.add('fade-in-up');
-            });
         } else {
             document.querySelectorAll('.fade-up').forEach(el => el.classList.add('visible'));
         }
 
-        // Page transition effect
+        /* Page transition */
         document.querySelectorAll('a[href]').forEach(link => {
-            link.addEventListener('click', function(e) {
-                if (this.hostname === window.location.hostname && !this.hasAttribute('download')) {
+            link.addEventListener('click', function (e) {
+                if (this.hostname === window.location.hostname &&
+                    !this.hasAttribute('download') &&
+                    !this.closest('[data-close-quiz]') &&
+                    !this.hasAttribute('data-no-transition')) {
                     e.preventDefault();
                     document.body.classList.add('page-transitioning');
-                    setTimeout(() => {
-                        window.location.href = this.href;
-                    }, 300);
+                    setTimeout(() => { window.location.href = this.href; }, 240);
                 }
             });
         });
-
-        // Create floating particles
-        function createParticles() {
-            const particlesBg = document.getElementById('particles-bg');
-            const particleCount = 20;
-
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.width = Math.random() * 4 + 2 + 'px';
-                particle.style.height = particle.style.width;
-                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
-                particle.style.animationDelay = Math.random() * 20 + 's';
-                particlesBg.appendChild(particle);
-            }
-        }
-
-        if (!pRM) {
-            createParticles();
-        }
     })();
     </script>
     {% block scripts %}{% endblock %}

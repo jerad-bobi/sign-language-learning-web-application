@@ -1,13 +1,15 @@
-.dictionary-layout {
-    display: block;
-}
+/* ===== LEARN VOCABULARIES PAGE ===== */
 
 .vocab-hero {
     margin-bottom: 24px;
 }
 
+.dictionary-layout {
+    display: block;
+}
+
 .dictionary-shell {
-    padding: 28px;
+    padding: 32px;
 }
 
 .dictionary-shell__intro,
@@ -16,6 +18,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 16px;
+    margin-bottom: 4px;
 }
 
 .dictionary-shell__intro h2,
@@ -35,42 +38,43 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 10px;
-    margin: 20px 0 22px;
+    margin: 20px 0 24px;
 }
 
 .dictionary-search__button {
-    min-width: 120px;
-    min-height: 46px;
-    padding: 0 20px;
+    min-width: 110px;
+    min-height: 48px;
+    padding: 0 22px;
     border: 0;
     border-radius: var(--radius-pill);
-    background: linear-gradient(135deg, var(--accent) 0%, #6d4fff 100%);
+    background: var(--accent-gradient);
     color: #fff;
     font-weight: 700;
     font-size: 0.875rem;
     cursor: pointer;
-    transition: opacity 0.2s, transform 0.2s;
-    box-shadow: 0 2px 12px var(--accent-glow);
+    transition: opacity 0.2s, transform 0.22s;
+    box-shadow: 0 2px 20px var(--accent-glow);
 }
 
 .dictionary-search__button:hover,
 .dictionary-search__button:focus-visible {
     opacity: 0.88;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
 }
 
 .dictionary-content {
     display: grid;
-    grid-template-columns: 1fr 280px;
+    grid-template-columns: 1fr 270px;
     gap: 20px;
     align-items: start;
 }
 
 .dictionary-results {
-    padding: 22px;
-    border: 1px solid var(--border-subtle);
+    padding: 24px;
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius);
-    background: var(--surface-2);
+    background: var(--glass-1);
+    backdrop-filter: blur(12px);
 }
 
 .dictionary-results__body {
@@ -83,7 +87,7 @@
     place-items: center;
     min-height: 280px;
     padding: 24px;
-    border: 1px dashed var(--border-subtle);
+    border: 1px dashed var(--glass-border);
     border-radius: var(--radius-sm);
     color: var(--text-muted);
     text-align: center;
@@ -98,31 +102,33 @@
 .dictionary-loading-card {
     min-height: 160px;
     border-radius: var(--radius-sm);
-    background: linear-gradient(90deg, var(--surface-2), var(--surface-3), var(--surface-2));
+    background: linear-gradient(90deg, var(--glass-1), var(--glass-2), var(--glass-1));
     background-size: 200% 100%;
-    animation: dictionary-shimmer 1.2s linear infinite;
+    animation: dictionary-shimmer 1.4s linear infinite;
 }
 
 .dictionary-card + .dictionary-card {
-    margin-top: 12px;
+    margin-top: 14px;
 }
 
 .dictionary-card {
-    padding: 20px;
-    border: 1px solid var(--border-subtle);
+    padding: 22px;
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius);
-    background: var(--surface-2);
-    transition: border-color 0.2s;
+    background: var(--glass-1);
+    backdrop-filter: blur(10px);
+    transition: border-color 0.22s, background 0.22s;
 }
 
 .dictionary-card:hover {
-    border-color: var(--border-strong);
+    border-color: var(--glass-border-hover);
+    background: var(--glass-2);
 }
 
 .dictionary-card__media {
     display: flex;
     justify-content: center;
-    margin-bottom: 16px;
+    margin-bottom: 18px;
 }
 
 .dictionary-card__eyebrow {
@@ -136,8 +142,8 @@
 }
 
 .dictionary-card__word {
-    margin: 0 0 8px;
-    font-size: 1.8rem;
+    margin: 0 0 10px;
+    font-size: 1.9rem;
     font-weight: 800;
     letter-spacing: -0.03em;
     text-transform: capitalize;
@@ -149,7 +155,7 @@
     margin: 0 0 12px;
     color: var(--text-secondary);
     font-size: 0.95rem;
-    line-height: 1.6;
+    line-height: 1.65;
 }
 
 .dictionary-card__link {
@@ -175,14 +181,16 @@
 
 @keyframes dictionary-shimmer {
     from { background-position: 200% 0; }
-    to { background-position: -200% 0; }
+    to   { background-position: -200% 0; }
 }
 
+/* History panel */
 .dictionary-history {
-    padding: 18px;
-    border: 1px solid var(--border-subtle);
+    padding: 20px;
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius);
-    background: var(--surface-2);
+    background: var(--glass-1);
+    backdrop-filter: blur(12px);
     position: sticky;
     top: calc(var(--nav-h) + 16px);
 }
@@ -192,7 +200,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
 }
 
 .dictionary-history__header h3 {
@@ -203,7 +211,7 @@
 
 .dictionary-history__clear {
     padding: 5px 12px;
-    border: 1px solid var(--border-subtle);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius-pill);
     background: transparent;
     color: var(--text-muted);
@@ -215,8 +223,9 @@
 
 .dictionary-history__clear:hover,
 .dictionary-history__clear:focus-visible {
-    border-color: var(--rose);
+    border-color: rgba(248,113,113,0.4);
     color: var(--rose);
+    background: rgba(248,113,113,0.06);
 }
 
 .dictionary-history__list {
@@ -227,9 +236,9 @@
 
 .dictionary-history__item {
     padding: 9px 14px;
-    border: 1px solid var(--border-subtle);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius-sm);
-    background: var(--surface-3);
+    background: var(--glass-2);
     color: var(--text-primary);
     font-size: 0.875rem;
     font-weight: 500;
@@ -244,25 +253,22 @@
 .dictionary-history__item:hover,
 .dictionary-history__item:focus-visible {
     border-color: var(--accent-border);
-    background: var(--accent);
-    color: #fff;
+    background: var(--accent-soft);
+    color: var(--accent-light);
 }
 
 @media (max-width: 992px) {
     .dictionary-content {
         grid-template-columns: 1fr;
     }
-
     .dictionary-history {
         position: static;
         order: -1;
     }
-
     .dictionary-history__list {
         flex-direction: row;
         flex-wrap: wrap;
     }
-
     .dictionary-history__item {
         flex: 0 0 auto;
         border-radius: var(--radius-pill);
@@ -270,10 +276,10 @@
 }
 
 @media (max-width: 768px) {
+    .dictionary-shell { padding: 20px; }
     .dictionary-search {
         grid-template-columns: 1fr;
     }
-
     .dictionary-search__button {
         width: 100%;
     }

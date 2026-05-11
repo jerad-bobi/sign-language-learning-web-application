@@ -1,3 +1,5 @@
+/* ===== ACCOUNT ACCESS PAGE ===== */
+
 .access-hero {
     margin-bottom: 28px;
 }
@@ -6,17 +8,44 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
-    max-width: 640px;
+    max-width: 600px;
     margin: 0 auto;
 }
 
 .access-card {
-    padding: 36px 32px;
+    padding: 40px 32px;
     display: grid;
-    gap: 20px;
+    gap: 18px;
     align-content: start;
     border-radius: var(--radius);
     text-align: center;
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+                border-color 0.25s ease,
+                box-shadow 0.25s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.access-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent-gradient);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.access-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+}
+
+.access-card:hover::before {
+    transform: scaleX(1);
 }
 
 .access-card h2 {
@@ -26,11 +55,24 @@
     letter-spacing: -0.03em;
 }
 
+.access-card p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.7;
+}
+
 .access-card--primary {
     border-color: var(--accent-border);
-    background: linear-gradient(160deg, rgba(79, 128, 255, 0.1) 0%, rgba(11, 20, 40, 0.95) 100%);
+    background: linear-gradient(160deg, rgba(129,140,248,0.1) 0%, var(--glass-1) 100%);
+}
+
+.access-card--primary:hover {
+    border-color: var(--accent-border);
+    box-shadow: var(--shadow-md), 0 0 32px var(--accent-glow);
 }
 
 @media (max-width: 600px) {
     .access-grid { grid-template-columns: 1fr; }
+    .access-card { padding: 32px 24px; }
 }
