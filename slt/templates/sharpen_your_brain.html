@@ -73,7 +73,7 @@
     </article>
 </section>
 
-<div class="quiz-modal" id="brain-quiz-modal" aria-hidden="true" data-quiz-url="{% url 'brain_quiz_question' %}" data-save-attempt-url="{% url 'brain_quiz_attempt_save' %}">
+<div class="quiz-modal" id="brain-quiz-modal" aria-hidden="true" data-quiz-url="{% url 'brain_quiz_question' %}" data-save-attempt-url="{% url 'brain_quiz_attempt_save' %}" data-predict-url="{% url 'predict_skeletal_sign' %}">
     <div class="quiz-modal__backdrop" data-close-quiz="true"></div>
     <section class="quiz-modal__dialog panel-surface" role="dialog" aria-modal="true" aria-labelledby="brain-quiz-title">
         <button class="quiz-modal__close" type="button" id="brain-close-quiz" aria-label="Close quiz">Close</button>
@@ -106,6 +106,14 @@
                     <div class="quiz-video-shell__loading">Loading question...</div>
                 </div>
 
+                <div class="quiz-sign-attempt" id="brain-sign-attempt" hidden>
+                    <div class="quiz-sign-word" id="brain-sign-word"></div>
+                    <div class="quiz-sign-camera-wrap">
+                        <video id="brain-sign-camera" autoplay playsinline muted></video>
+                        <canvas id="brain-sign-canvas"></canvas>
+                    </div>
+                </div>
+
                 <div class="quiz-copy">
                     <h2 id="brain-question-prompt">What does this sign mean?</h2>
                     <p class="quiz-feedback" id="brain-feedback">Choose the matching answer.</p>
@@ -127,5 +135,8 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 <script src="{% static 'js/sharpen_your_brain.js' %}"></script>
 {% endblock %}

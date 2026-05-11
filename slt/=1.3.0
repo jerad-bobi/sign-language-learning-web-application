@@ -1,0 +1,117 @@
+Collecting scikit-learn
+  Using cached scikit_learn-1.8.0.tar.gz (7.3 MB)
+  Installing build dependencies: started
+  Installing build dependencies: still running...
+  Installing build dependencies: still running...
+  Installing build dependencies: still running...
+  Installing build dependencies: still running...
+  Installing build dependencies: still running...
+  Installing build dependencies: still running...
+  Installing build dependencies: finished with status 'error'
+  error: subprocess-exited-with-error
+  
+  × installing build dependencies for scikit-learn did not run successfully.
+  │ exit code: 1
+  ╰─> [95 lines of output]
+      Collecting meson-python<0.19.0,>=0.17.1
+        Using cached meson_python-0.18.0-py3-none-any.whl.metadata (2.8 kB)
+      Collecting cython<3.3.0,>=3.1.2
+        Using cached cython-3.2.4-py3-none-any.whl.metadata (7.3 kB)
+      Collecting numpy<2.4.0,>=2
+        Using cached numpy-2.3.5.tar.gz (20.6 MB)
+        Installing build dependencies: started
+        Installing build dependencies: finished with status 'done'
+        Getting requirements to build wheel: started
+        Getting requirements to build wheel: finished with status 'done'
+        Installing backend dependencies: started
+        Installing backend dependencies: finished with status 'done'
+        Preparing metadata (pyproject.toml): started
+        Preparing metadata (pyproject.toml): still running...
+        Preparing metadata (pyproject.toml): still running...
+        Preparing metadata (pyproject.toml): still running...
+        Preparing metadata (pyproject.toml): still running...
+        Preparing metadata (pyproject.toml): still running...
+        Preparing metadata (pyproject.toml): still running...
+        Preparing metadata (pyproject.toml): finished with status 'done'
+      WARNING: Cache entry deserialization failed, entry ignored
+      Collecting scipy<1.17.0,>=1.10.0
+        Using cached scipy-1.16.3.tar.gz (30.6 MB)
+        Installing build dependencies: started
+        Installing build dependencies: finished with status 'done'
+        Getting requirements to build wheel: started
+        Getting requirements to build wheel: finished with status 'done'
+        Installing backend dependencies: started
+        Installing backend dependencies: finished with status 'done'
+        Preparing metadata (pyproject.toml): started
+        Preparing metadata (pyproject.toml): finished with status 'error'
+        error: subprocess-exited-with-error
+      
+        × Preparing metadata (pyproject.toml) did not run successfully.
+        │ exit code: 1
+        ╰─> [49 lines of output]
+            + meson setup C:\Users\parag\AppData\Local\Temp\pip-install-fw519t13\scipy_b5cf930b04004babbfb7e9c0e185c68e C:\Users\parag\AppData\Local\Temp\pip-install-fw519t13\scipy_b5cf930b04004babbfb7e9c0e185c68e\.mesonpy-74jtknk4 -Dbuildtype=release -Db_ndebug=if-release -Db_vscrt=md --native-file=C:\Users\parag\AppData\Local\Temp\pip-install-fw519t13\scipy_b5cf930b04004babbfb7e9c0e185c68e\.mesonpy-74jtknk4\meson-python-native-file.ini
+            The Meson build system
+            Version: 1.11.1
+            Source dir: C:\Users\parag\AppData\Local\Temp\pip-install-fw519t13\scipy_b5cf930b04004babbfb7e9c0e185c68e
+            Build dir: C:\Users\parag\AppData\Local\Temp\pip-install-fw519t13\scipy_b5cf930b04004babbfb7e9c0e185c68e\.mesonpy-74jtknk4
+            Build type: native build
+            Project name: scipy
+            Project version: 1.16.3
+            C compiler for the host machine: cc (gcc 15.2.0 "cc (Rev8, Built by MSYS2 project) 15.2.0")
+            C linker for the host machine: cc ld.bfd 15.2.0
+            C++ compiler for the host machine: c++ (gcc 15.2.0 "c++ (Rev8, Built by MSYS2 project) 15.2.0")
+            C++ linker for the host machine: c++ ld.bfd 15.2.0
+            Cython compiler for the host machine: cython (cython 3.1.8)
+            Host machine cpu family: x86_64
+            Host machine cpu: x86_64
+            Program python found: YES (C:\Users\parag\AppData\Local\Programs\Python\Python315\python.exe)
+            Run-time dependency python found: YES 3.15
+            Program cython found: YES (C:\Users\parag\AppData\Local\Temp\pip-build-env-moh7gmux\overlay\Scripts\cython.EXE)
+            Compiler for C supports arguments -Wno-unused-but-set-variable: YES
+            Compiler for C supports arguments -Wno-unused-function: YES
+            Compiler for C supports arguments -Wno-conversion: YES
+            Compiler for C supports arguments -Wno-misleading-indentation: YES
+            Library m found: YES
+      
+            ..\meson.build:88:0: ERROR: Unknown compiler(s): [['ifort'], ['ifx'], ['gfortran'], ['flang-new'], ['flang'], ['pgfortran'], ['g95']]
+            The following exception(s) were encountered:
+            Running `ifort --help` gave "[WinError 2] The system cannot find the file specified"
+            Running `ifort --version` gave "[WinError 2] The system cannot find the file specified"
+            Running `ifort -V` gave "[WinError 2] The system cannot find the file specified"
+            Running `ifx --help` gave "[WinError 2] The system cannot find the file specified"
+            Running `ifx --version` gave "[WinError 2] The system cannot find the file specified"
+            Running `ifx -V` gave "[WinError 2] The system cannot find the file specified"
+            Running `gfortran --help` gave "[WinError 2] The system cannot find the file specified"
+            Running `gfortran --version` gave "[WinError 2] The system cannot find the file specified"
+            Running `gfortran -V` gave "[WinError 2] The system cannot find the file specified"
+            Running `flang-new --help` gave "[WinError 2] The system cannot find the file specified"
+            Running `flang-new --version` gave "[WinError 2] The system cannot find the file specified"
+            Running `flang-new -V` gave "[WinError 2] The system cannot find the file specified"
+            Running `flang --help` gave "[WinError 2] The system cannot find the file specified"
+            Running `flang --version` gave "[WinError 2] The system cannot find the file specified"
+            Running `flang -V` gave "[WinError 2] The system cannot find the file specified"
+            Running `pgfortran --help` gave "[WinError 2] The system cannot find the file specified"
+            Running `pgfortran --version` gave "[WinError 2] The system cannot find the file specified"
+            Running `pgfortran -V` gave "[WinError 2] The system cannot find the file specified"
+            Running `g95 --help` gave "[WinError 2] The system cannot find the file specified"
+            Running `g95 --version` gave "[WinError 2] The system cannot find the file specified"
+            Running `g95 -V` gave "[WinError 2] The system cannot find the file specified"
+      
+            A full log can be found at C:\Users\parag\AppData\Local\Temp\pip-install-fw519t13\scipy_b5cf930b04004babbfb7e9c0e185c68e\.mesonpy-74jtknk4\meson-logs\meson-log.txt
+            [end of output]
+      
+        note: This error originates from a subprocess, and is likely not a problem with pip.
+      error: metadata-generation-failed
+      
+      × Encountered error while generating package metadata.
+      ╰─> scipy
+      
+      note: This is an issue with the package mentioned above, not pip.
+      hint: See above for details.
+      [end of output]
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+
+[notice] A new release of pip is available: 26.1 -> 26.1.1
+[notice] To update, run: python.exe -m pip install --upgrade pip
+ERROR: Failed to build 'scikit-learn' when installing build dependencies for scikit-learn

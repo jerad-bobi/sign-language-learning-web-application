@@ -534,6 +534,7 @@ def get_quiz_question_from_terms(terms: tuple[str, ...] | list[str]) -> dict:
     primary_video = correct_entry['videos'][0]
 
     return {
+        'question_type': 'mcq',
         'prompt': 'What does this sign mean?',
         'video': {
             'src': primary_video['src'],
@@ -551,4 +552,16 @@ def get_quiz_question_from_terms(terms: tuple[str, ...] | list[str]) -> dict:
         'correct_answer': correct_term,
         'correct_label': _format_quiz_label(correct_term),
         'definition': correct_entry.get('definition') or '',
+    }
+
+
+def get_sign_attempt_question_from_terms(terms: tuple[str, ...] | list[str]) -> dict:
+    terms = list(terms)
+    random.shuffle(terms)
+    correct_term = terms[0]
+    return {
+        'question_type': 'sign_attempt',
+        'prompt': 'Sign this word',
+        'correct_answer': correct_term,
+        'correct_label': _format_quiz_label(correct_term),
     }

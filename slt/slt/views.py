@@ -1,4 +1,5 @@
 import json
+import random
 import re
 import string
 from base64 import b64decode
@@ -12,8 +13,9 @@ from django.urls import reverse
 
 from accounts.models import Account, BrainQuizAttempt, SearchHistory, SkeletalSignSample, SyllabusProgress
 
+from .ml_classifier_service import predict_sign_ml
 from .skeletal_classifier_service import normalize_landmarks, predict_sign_from_landmarks
-from .signasl_service import QUIZ_TERMS, get_quiz_question_from_terms, lookup_text
+from .signasl_service import QUIZ_TERMS, get_quiz_question_from_terms, get_sign_attempt_question_from_terms, lookup_text
 
 
 BRAIN_QUIZ_SEEN_TERMS = 'brain_quiz_seen_terms'
@@ -346,7 +348,9 @@ def predict_skeletal_sign(request):
     if not isinstance(landmarks, list):
         return JsonResponse({'error': 'Landmarks are required.'}, status=400)
 
-    result = predict_sign_from_landmarks(landmarks)
+    result = predict_sign_ml(landmarks)
+    if not result.get('ok'):
+        result = predict_sign_from_landmarks(landmarks)
     if not result.get('ok'):
         return JsonResponse(result, status=400)
 
@@ -445,10 +449,13 @@ def brain_quiz_question(request):
         seen_terms = []
         available_terms = list(QUIZ_TERMS)
 
-    try:
-        payload = get_quiz_question_from_terms(available_terms)
-    except LookupError:
-        return JsonResponse({'error': 'Quiz content unavailable.'}, status=503)
+    if random.random() < 0.5:
+        payload = get_sign_attempt_question_from_terms(available_terms)
+    else:
+        try:
+            payload = get_quiz_question_from_terms(available_terms)
+        except LookupError:
+            return JsonResponse({'error': 'Quiz content unavailable.'}, status=503)
 
     correct_answer = payload.get('correct_answer')
     if correct_answer:

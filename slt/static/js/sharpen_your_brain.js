@@ -22,6 +22,24 @@ const brainLeaderboardStatus = document.getElementById('brain-leaderboard-status
 const brainLeaderboardUpdated = document.getElementById('brain-leaderboard-updated');
 const brainLeaderboardPlayerCount = document.getElementById('brain-leaderboard-player-count');
 const brainLeaderboardCurrentRank = document.getElementById('brain-leaderboard-current-rank');
+const brainSignAttempt = document.getElementById('brain-sign-attempt');
+const brainSignWord = document.getElementById('brain-sign-word');
+const brainSignCamera = document.getElementById('brain-sign-camera');
+const brainSignCanvas = document.getElementById('brain-sign-canvas');
+const brainPredictUrl = brainQuizModal ? brainQuizModal.dataset.predictUrl || '' : '';
+
+const brainSignState = {
+    active: false,
+    stream: null,
+    hands: null,
+    frameId: 0,
+    handsBusy: false,
+    latestLandmarks: null,
+    pollTimer: null,
+    questionTimeout: null,
+};
+
+const SIGN_ATTEMPT_TIMEOUT_MS = 8000;
 
 const brainQuizState = {
     active: false,
@@ -120,6 +138,7 @@ function resetBrainQuizState() {
 }
 
 function stopBrainQuiz() {
+    stopSignAttemptCamera();
     brainQuizState.active = false;
     brainQuizState.currentQuestion = null;
     brainQuizState.locked = false;
@@ -256,6 +275,7 @@ async function loadBrainQuestion() {
         return;
     }
 
+    stopSignAttemptCamera();
     brainQuizState.loadingQuestion = true;
     brainQuizState.locked = true;
     brainQuizState.timerPaused = true;
@@ -306,6 +326,14 @@ function renderBrainQuestion(question) {
     }
 
     brainQuestionPrompt.textContent = question.prompt || 'What does this sign mean?';
+
+    if (question.question_type === 'sign_attempt') {
+        brainVideoShell.innerHTML = '';
+        brainOptions.innerHTML = '';
+        renderBrainFeedback('Camera starting…', 'idle');
+        void setupSignAttemptCamera(question);
+        return;
+    }
 
     brainVideoShell.innerHTML = `
         <div class="quiz-video-row">
@@ -466,6 +494,219 @@ function handleBrainAnswer(selectedValue) {
 
         void loadBrainQuestion();
     }, 700);
+}
+
+function stopSignAttemptCamera() {
+    brainSignState.active = false;
+
+    if (brainSignState.questionTimeout) {
+        clearTimeout(brainSignState.questionTimeout);
+        brainSignState.questionTimeout = null;
+    }
+
+    if (brainSignState.pollTimer) {
+        clearTimeout(brainSignState.pollTimer);
+        brainSignState.pollTimer = null;
+    }
+
+    if (brainSignState.frameId) {
+        window.cancelAnimationFrame(brainSignState.frameId);
+        brainSignState.frameId = 0;
+    }
+
+    if (brainSignState.stream) {
+        brainSignState.stream.getTracks().forEach((track) => track.stop());
+        brainSignState.stream = null;
+    }
+
+    brainSignState.hands = null;
+    brainSignState.handsBusy = false;
+    brainSignState.latestLandmarks = null;
+
+    if (brainSignAttempt) {
+        brainSignAttempt.hidden = true;
+    }
+
+    if (brainSignCamera) {
+        brainSignCamera.srcObject = null;
+    }
+}
+
+async function setupSignAttemptCamera(question) {
+    if (!brainSignCamera || !brainSignCanvas || !brainSignWord || !brainSignAttempt) {
+        handleBrainAnswer('');
+        return;
+    }
+
+    if (typeof window.Hands !== 'function') {
+        renderBrainFeedback('Hand tracking unavailable for this question.', 'warning');
+        brainQuizState.timerPaused = false;
+        brainQuizState.lastTickAt = 0;
+        brainSignState.questionTimeout = setTimeout(() => {
+            if (brainQuizState.active) {
+                handleBrainAnswer('');
+            }
+        }, SIGN_ATTEMPT_TIMEOUT_MS);
+        return;
+    }
+
+    brainSignState.active = true;
+    brainSignWord.textContent = question.correct_label || question.correct_answer;
+    brainSignAttempt.hidden = false;
+
+    const hands = new window.Hands({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+    });
+
+    hands.setOptions({
+        maxNumHands: 1,
+        modelComplexity: 1,
+        minDetectionConfidence: 0.7,
+        minTrackingConfidence: 0.5,
+    });
+
+    hands.onResults((results) => {
+        if (!brainSignState.active) {
+            return;
+        }
+
+        const ctx = brainSignCanvas.getContext('2d');
+        const w = brainSignCamera.videoWidth || brainSignCamera.clientWidth;
+        const h = brainSignCamera.videoHeight || brainSignCamera.clientHeight;
+        if (w && h) {
+            brainSignCanvas.width = w;
+            brainSignCanvas.height = h;
+        }
+        ctx.clearRect(0, 0, brainSignCanvas.width, brainSignCanvas.height);
+
+        const sets = results.multiHandLandmarks || [];
+        brainSignState.latestLandmarks = sets.length ? sets[0] : null;
+
+        if (sets.length && window.drawConnectors && window.drawLandmarks && window.HAND_CONNECTIONS) {
+            for (const lm of sets) {
+                window.drawConnectors(ctx, lm, window.HAND_CONNECTIONS, { color: '#7c3aed', lineWidth: 2 });
+                window.drawLandmarks(ctx, lm, { color: '#a78bfa', fillColor: '#6d28d9', lineWidth: 1, radius: 3 });
+            }
+        }
+    });
+
+    brainSignState.hands = hands;
+
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }, audio: false });
+
+        if (!brainSignState.active) {
+            stream.getTracks().forEach((t) => t.stop());
+            return;
+        }
+
+        brainSignState.stream = stream;
+        brainSignCamera.srcObject = stream;
+        await brainSignCamera.play();
+
+        const processFrame = async () => {
+            if (!brainSignState.active || !brainSignState.hands) {
+                brainSignState.frameId = 0;
+                return;
+            }
+
+            if (brainSignCamera.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && !brainSignState.handsBusy) {
+                brainSignState.handsBusy = true;
+                try {
+                    await brainSignState.hands.send({ image: brainSignCamera });
+                } catch (_) {
+                    // ignore frame errors
+                } finally {
+                    brainSignState.handsBusy = false;
+                }
+            }
+
+            brainSignState.frameId = window.requestAnimationFrame(processFrame);
+        };
+
+        brainSignState.frameId = window.requestAnimationFrame(processFrame);
+
+        brainQuizState.timerPaused = false;
+        brainQuizState.lastTickAt = 0;
+        renderBrainHud();
+        renderBrainFeedback('Show the sign to the camera.', 'idle');
+
+        scheduleSignPrediction(question);
+
+        brainSignState.questionTimeout = setTimeout(() => {
+            if (brainSignState.active && brainQuizState.active) {
+                stopSignAttemptCamera();
+                handleBrainAnswer('');
+            }
+        }, SIGN_ATTEMPT_TIMEOUT_MS);
+
+    } catch (_) {
+        brainSignState.active = false;
+        renderBrainFeedback('Camera unavailable. Skipping sign question.', 'warning');
+        brainQuizState.timerPaused = false;
+        brainQuizState.lastTickAt = 0;
+        brainSignState.questionTimeout = setTimeout(() => {
+            if (brainQuizState.active) {
+                stopSignAttemptCamera();
+                handleBrainAnswer('');
+            }
+        }, 2000);
+    }
+}
+
+function scheduleSignPrediction(question) {
+    if (!brainSignState.active || !brainQuizState.active) {
+        return;
+    }
+
+    brainSignState.pollTimer = setTimeout(() => {
+        void runSignPrediction(question);
+    }, 700);
+}
+
+async function runSignPrediction(question) {
+    if (!brainSignState.active || !brainQuizState.active || !brainPredictUrl) {
+        return;
+    }
+
+    const landmarks = brainSignState.latestLandmarks;
+    if (!landmarks) {
+        scheduleSignPrediction(question);
+        return;
+    }
+
+    try {
+        const response = await fetch(brainPredictUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCsrfToken(),
+            },
+            body: JSON.stringify({ landmarks }),
+        });
+
+        if (!brainSignState.active || !brainQuizState.active) {
+            return;
+        }
+
+        if (response.ok) {
+            const result = await response.json();
+            if (result.ok && result.confidence >= 0.45) {
+                const predicted = String(result.predicted_sign || '').toLowerCase().trim();
+                const expected = String(question.correct_answer || '').toLowerCase().trim();
+                if (predicted === expected) {
+                    stopSignAttemptCamera();
+                    handleBrainAnswer(question.correct_answer);
+                    return;
+                }
+            }
+        }
+    } catch (_) {
+        // continue polling
+    }
+
+    scheduleSignPrediction(question);
 }
 
 function escapeBrainHtml(value) {
