@@ -15,6 +15,8 @@ const restartCameraButton = document.getElementById('restart-camera');
 const toggleCaptureModeButton = document.getElementById('toggle-capture-mode');
 const captureSignNameInput = document.getElementById('capture-sign-name');
 const signContextMode = document.getElementById('sign-context-mode');
+const microphoneButton = document.getElementById('microphone-button');
+const recordingIndicator = document.getElementById('recording-indicator');
 const lookupUrl = translatorShell ? translatorShell.dataset.lookupUrl : '';
 const captureUrl = translatorShell ? translatorShell.dataset.captureUrl || '' : '';
 const predictUrl = translatorShell ? translatorShell.dataset.predictUrl || '' : '';
@@ -40,6 +42,19 @@ let signPredictionIntervalId = 0;
 let signPredictionBusy = false;
 let captureCountdownIntervalId = 0;
 let captureCountdownRemaining = 0;
+
+// Microphone feature variables
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let speechRecognition = null;
+let isRecording = false;
+
+// Initialize speech recognition if available
+if (SpeechRecognition) {
+    speechRecognition = new SpeechRecognition();
+    speechRecognition.continuous = false;
+    speechRecognition.interimResults = true;
+    speechRecognition.lang = 'en-US';
+}
 
 const practiceSession = {
     startTime: null,
@@ -116,6 +131,7 @@ function setMode(nextMode) {
 
     if (nextMode === 'sign-to-text') {
         startPracticeSession();
+        stopMicrophoneRecording();
         void startCameraPreview();
         startSignPredictionLoop();
     } else {
@@ -125,6 +141,7 @@ function setMode(nextMode) {
         setSkeletalCaptureMode(false);
         stopSignPredictionLoop();
         stopCameraPreview();
+        stopMicrophoneRecording();
         renderSignTextOutput('Text output.', 'idle');
     }
 }
@@ -846,6 +863,132 @@ function escapeAttribute(value) {
     return escapeHtml(value);
 }
 
+// Microphone feature functions
+function startMicrophoneRecording() {
+    if (!speechRecognition) {
+        setCameraStatusMessage('Speech recognition not supported in this browser.', true);
+        return;
+    }
+
+    if (isRecording) {
+        stopMicrophoneRecording();
+        return;
+    }
+
+    isRecording = true;
+
+    if (microphoneButton) {
+        microphoneButton.classList.add('microphone-button--recording');
+        microphoneButton.setAttribute('aria-label', 'Stop microphone recording');
+    }
+
+    if (recordingIndicator) {
+        recordingIndicator.classList.add('recording-indicator--active');
+    }
+
+    try {
+        speechRecognition.start();
+    } catch (error) {
+        // Ignore errors when already recording
+    }
+}
+
+function stopMicrophoneRecording() {
+    if (!isRecording) {
+        return;
+    }
+
+    isRecording = false;
+
+    if (microphoneButton) {
+        microphoneButton.classList.remove('microphone-button--recording');
+        microphoneButton.setAttribute('aria-label', 'Start microphone recording');
+    }
+
+    if (recordingIndicator) {
+        recordingIndicator.classList.remove('recording-indicator--active');
+    }
+
+    if (speechRecognition) {
+        speechRecognition.stop();
+    }
+}
+
+function setupSpeechRecognitionHandlers() {
+    if (!speechRecognition) {
+        return;
+    }
+
+    speechRecognition.onstart = () => {
+        if (recordingIndicator) {
+            recordingIndicator.classList.add('recording-indicator--active');
+        }
+    };
+
+    speechRecognition.onresult = (event) => {
+        let interimTranscript = '';
+        let finalTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+
+            if (event.results[i].isFinal) {
+                finalTranscript += transcript + ' ';
+            } else {
+                interimTranscript += transcript;
+            }
+        }
+
+        // Update text input with final transcript
+        if (finalTranscript.trim() && textInput) {
+            const currentText = textInput.value.trim();
+            const newText = currentText ? currentText + ' ' + finalTranscript.trim() : finalTranscript.trim();
+            textInput.value = newText;
+            updateSignPreview();
+        }
+    };
+
+    speechRecognition.onerror = (event) => {
+        let errorMessage = 'Microphone error occurred.';
+
+        switch (event.error) {
+            case 'no-speech':
+                errorMessage = 'No speech detected. Please try again.';
+                break;
+            case 'audio-capture':
+                errorMessage = 'No microphone found. Check permissions.';
+                break;
+            case 'network':
+                errorMessage = 'Network error. Check your connection.';
+                break;
+            case 'permission-denied':
+                errorMessage = 'Microphone permission denied.';
+                break;
+            case 'aborted':
+                errorMessage = 'Recording was cancelled.';
+                break;
+        }
+
+        if (recordingIndicator) {
+            const textSpan = recordingIndicator.querySelector('.recording-text');
+            if (textSpan) {
+                textSpan.textContent = errorMessage;
+            }
+        }
+    };
+
+    speechRecognition.onend = () => {
+        stopMicrophoneRecording();
+        if (recordingIndicator) {
+            recordingIndicator.classList.remove('recording-indicator--active');
+            const textSpan = recordingIndicator.querySelector('.recording-text');
+            if (textSpan) {
+                textSpan.textContent = 'Listening...';
+            }
+        }
+    };
+}
+
 function getCsrfToken() {
     const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
     if (csrfInput instanceof HTMLInputElement && csrfInput.value) {
@@ -870,6 +1013,21 @@ if (swapButton && translatorShell) {
 if (textInput) {
     textInput.addEventListener('input', updateSignPreview);
 }
+
+if (microphoneButton) {
+    if (!speechRecognition) {
+        microphoneButton.disabled = true;
+        microphoneButton.setAttribute('title', 'Speech recognition not supported');
+    } else {
+        microphoneButton.addEventListener('click', () => {
+            if (translatorShell && translatorShell.dataset.mode === 'text-to-sign') {
+                startMicrophoneRecording();
+            }
+        });
+    }
+}
+
+setupSpeechRecognitionHandlers();
 
 if (restartCameraButton) {
     restartCameraButton.addEventListener('click', () => {
@@ -911,6 +1069,7 @@ window.addEventListener('beforeunload', () => {
     }
     stopSignPredictionLoop();
     stopCameraPreview();
+    stopMicrophoneRecording();
 });
 window.addEventListener('resize', syncCameraOverlaySize);
 
