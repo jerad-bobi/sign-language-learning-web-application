@@ -41,24 +41,39 @@
 			<div class="dash-card-label">Total Attempts</div>
 			<a href="{% url 'about_me' %}" class="dash-card-action">View History →</a>
 		</div>
-		{% if syllabus_progress %}
-		<div class="dash-card hover-lift">
-			<div class="dash-card-value">{{ syllabus_progress.current_term_index }}<span class="dash-card-denom">/{{ syllabus_progress.total_terms }}</span></div>
-			<div class="dash-card-label">{{ syllabus_progress.syllabus_key|title }} Lesson</div>
-			<a href="{{ syllabus_url }}" class="dash-card-action">Continue →</a>
-		</div>
-		{% endif %}
 		{% if recent_searches %}
 		<div class="dash-card dash-card--wide hover-lift">
 			<div class="dash-card-label">Recent Searches</div>
 			<div class="dash-searches-list">
 				{% for term in recent_searches %}
-				<a href="{% url 'learn_vocabularies' %}" class="dash-search-tag">{{ term }}</a>
+				<a href="{% url 'learn_vocabularies' %}?q={{ term|urlencode }}" class="dash-search-tag">{{ term }}</a>
 				{% endfor %}
 			</div>
 		</div>
 		{% endif %}
 	</div>
+	{% if all_syllabus_cards %}
+	<div class="dashboard-syllabus">
+		<p class="dashboard-syllabus__label">Syllabus Progress</p>
+		<div class="dashboard-syllabus__grid">
+			{% for card in all_syllabus_cards %}
+			<a href="{{ card.url }}" class="dash-syllabus-card hover-lift{% if card.progress %} dash-syllabus-card--active{% endif %}">
+				<div class="dash-syllabus-card__title">{{ card.title }}</div>
+				{% if card.progress %}
+				<div class="dash-syllabus-card__progress">
+					<div class="dash-syllabus-bar">
+						<div class="dash-syllabus-bar__fill" style="width:{% widthratio card.progress.current_term_index card.progress.total_terms 100 %}%"></div>
+					</div>
+					<span class="dash-syllabus-card__count">{{ card.progress.current_term_index }}/{{ card.progress.total_terms }}</span>
+				</div>
+				{% else %}
+				<div class="dash-syllabus-card__start">Start →</div>
+				{% endif %}
+			</a>
+			{% endfor %}
+		</div>
+	</div>
+	{% endif %}
 </section>
 {% endif %}
 

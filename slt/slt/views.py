@@ -11,7 +11,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 
-from accounts.models import Account, BrainQuizAttempt, SearchHistory, SkeletalSignSample, SyllabusProgress
+from accounts.models import Account, BrainQuizAttempt, PracticeSession, SearchHistory, SkeletalSignSample, SyllabusProgress, VocabularyFavorite
 
 from .ml_classifier_service import predict_sign_ml
 from .skeletal_classifier_service import normalize_landmarks, predict_sign_from_landmarks
@@ -140,6 +140,14 @@ _SYLLABUS_URL_NAMES = {
 }
 
 
+_SYLLABUS_META = [
+    (LETTERS_AND_NUMBERS_SYLLABUS_KEY, 'Letters and Numbers', 'syllabus_letters_and_numbers'),
+    (GREETINGS_AND_PERSONAL_SYLLABUS_KEY, 'Greetings and Personal', 'syllabus_greetings_and_personal'),
+    (POLITE_PHRASES_SYLLABUS_KEY, 'Polite Phrases', 'syllabus_polite_phrases'),
+    (DAILY_LIFE_SYLLABUS_KEY, 'Daily Life', 'syllabus_daily_life'),
+]
+
+
 def home(request):
     context = {'active_page': 'home'}
     account_id = request.session.get(SESSION_ACCOUNT_ID)
@@ -163,19 +171,26 @@ def home(request):
                 if len(recent_searches) >= 5:
                     break
 
-            syllabus_progress = account.syllabus_progress_entries.first()
-            syllabus_url = None
-            if syllabus_progress:
-                url_name = _SYLLABUS_URL_NAMES.get(syllabus_progress.syllabus_key, 'syllabus_letters_and_numbers')
-                syllabus_url = reverse(url_name)
+            progress_by_key = {
+                sp.syllabus_key: sp
+                for sp in account.syllabus_progress_entries.all()
+            }
+            all_syllabus_cards = [
+                {
+                    'key': key,
+                    'title': title,
+                    'url': reverse(url_name),
+                    'progress': progress_by_key.get(key),
+                }
+                for key, title, url_name in _SYLLABUS_META
+            ]
 
             context.update({
                 'dashboard_user': account,
                 'best_score': best or 0,
                 'total_attempts': account.brain_quiz_attempts.count(),
                 'recent_searches': recent_searches,
-                'syllabus_progress': syllabus_progress,
-                'syllabus_url': syllabus_url,
+                'all_syllabus_cards': all_syllabus_cards,
             })
         except Account.DoesNotExist:
             pass
@@ -575,6 +590,73 @@ def save_syllabus_progress(request, syllabus_key: str):
 
     progress = _save_syllabus_progress(request, syllabus_key, terms, payload.get('current_term_index', 0))
     return JsonResponse({'saved': True, 'completed': False, 'progress': progress})
+
+
+def save_practice_session(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
+    account = _get_current_account(request)
+    if not account:
+        return JsonResponse({'error': 'Authentication required.'}, status=401)
+
+    try:
+        payload = json.loads(request.body.decode('utf-8'))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return JsonResponse({'error': 'Invalid request body.'}, status=400)
+
+    try:
+        signs_detected = max(0, int(payload.get('signs_detected', 0)))
+        duration_seconds = max(0, int(payload.get('duration_seconds', 0)))
+    except (TypeError, ValueError):
+        return JsonResponse({'error': 'Invalid session data.'}, status=400)
+
+    if duration_seconds < 5:
+        return JsonResponse({'saved': False, 'reason': 'Session too short.'})
+
+    session = PracticeSession.objects.create(
+        account=account,
+        signs_detected=signs_detected,
+        duration_seconds=duration_seconds,
+    )
+    return JsonResponse({'saved': True, 'session_id': session.id})
+
+
+def toggle_vocabulary_favorite(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
+    account = _get_current_account(request)
+    if not account:
+        return JsonResponse({'error': 'Authentication required.'}, status=401)
+
+    try:
+        payload = json.loads(request.body.decode('utf-8'))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return JsonResponse({'error': 'Invalid request body.'}, status=400)
+
+    word = str(payload.get('word', '')).strip()[:100]
+    if not word:
+        return JsonResponse({'error': 'Word is required.'}, status=400)
+
+    from django.db import IntegrityError
+    try:
+        VocabularyFavorite.objects.create(account=account, word=word)
+        return JsonResponse({'favorited': True, 'word': word})
+    except IntegrityError:
+        VocabularyFavorite.objects.filter(account=account, word=word).delete()
+        return JsonResponse({'favorited': False, 'word': word})
+
+
+def get_vocabulary_favorites(request):
+    account = _get_current_account(request)
+    if not account:
+        return JsonResponse({'favorites': []})
+
+    favorites = list(
+        VocabularyFavorite.objects.filter(account=account).values_list('word', flat=True)
+    )
+    return JsonResponse({'favorites': favorites})
 
 
 def learn_vocabularies(request):

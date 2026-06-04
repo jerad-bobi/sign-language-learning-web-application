@@ -24,10 +24,12 @@ from .views import (
     brain_quiz_question,
     clear_search_history,
     get_search_history,
+    get_vocabulary_favorites,
     home,
     learn_vocabularies,
     lets_practice,
     predict_skeletal_sign,
+    save_practice_session,
     save_skeletal_hand_capture,
     save_syllabus_progress,
     sharpen_your_brain,
@@ -35,6 +37,7 @@ from .views import (
     syllabus_greetings_and_personal,
     syllabus_letters_and_numbers,
     syllabus_polite_phrases,
+    toggle_vocabulary_favorite,
 )
 from .views import signasl_lookup
 
@@ -45,6 +48,9 @@ urlpatterns = [
     path('api/signasl-lookup/', signasl_lookup, name='signasl_lookup'),
     path('api/search-history/', get_search_history, name='get_search_history'),
     path('api/clear-search-history/', clear_search_history, name='clear_search_history'),
+    path('api/vocabulary-favorites/', get_vocabulary_favorites, name='get_vocabulary_favorites'),
+    path('api/toggle-vocabulary-favorite/', toggle_vocabulary_favorite, name='toggle_vocabulary_favorite'),
+    path('api/save-practice-session/', save_practice_session, name='save_practice_session'),
     path('api/save-skeletal-hand-capture/', save_skeletal_hand_capture, name='save_skeletal_hand_capture'),
     path('api/predict-skeletal-sign/', predict_skeletal_sign, name='predict_skeletal_sign'),
     path('api/brain-quiz-question/', brain_quiz_question, name='brain_quiz_question'),

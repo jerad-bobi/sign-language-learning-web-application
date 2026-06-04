@@ -18,7 +18,7 @@
 </section>
 
 <section class="dictionary-layout">
-	<section class="dictionary-shell panel-surface fade-up hover-glow" data-lookup-url="{% url 'signasl_lookup' %}" data-history-url="{% url 'get_search_history' %}" data-clear-history-url="{% url 'clear_search_history' %}">
+	<section class="dictionary-shell panel-surface fade-up hover-glow" data-lookup-url="{% url 'signasl_lookup' %}" data-history-url="{% url 'get_search_history' %}" data-clear-history-url="{% url 'clear_search_history' %}" data-favorites-url="{% url 'get_vocabulary_favorites' %}" data-toggle-favorite-url="{% url 'toggle_vocabulary_favorite' %}">
 		<div class="dictionary-shell__intro">
 			<div>
 				<h2>Sign lookup</h2>
@@ -54,15 +54,25 @@
 			</section>
 
 			{% if user.is_authenticated or request.session.account_id %}
-			<aside class="dictionary-history fade-up" id="dictionary-history-section">
-				<div class="dictionary-history__header">
-					<h3>Recent Searches</h3>
-					<button class="dictionary-history__clear hover-scale" id="clear-history-btn" type="button">Clear</button>
-				</div>
-				<div class="dictionary-history__body" id="dictionary-history-body">
-					<div class="dictionary-empty-state">No search history yet.</div>
-				</div>
-			</aside>
+			<div class="dictionary-sidebar">
+				<aside class="dictionary-history fade-up" id="dictionary-history-section">
+					<div class="dictionary-history__header">
+						<h3>Recent Searches</h3>
+						<button class="dictionary-history__clear hover-scale" id="clear-history-btn" type="button">Clear</button>
+					</div>
+					<div class="dictionary-history__body" id="dictionary-history-body">
+						<div class="dictionary-empty-state">No search history yet.</div>
+					</div>
+				</aside>
+				<aside class="dictionary-favorites fade-up" id="dictionary-favorites-section">
+					<div class="dictionary-favorites__header">
+						<h3>Saved Signs</h3>
+					</div>
+					<div class="dictionary-favorites__body" id="dictionary-favorites-body">
+						<div class="dictionary-empty-state">No saved signs yet.</div>
+					</div>
+				</aside>
+			</div>
 			{% endif %}
 		</div>
 	</section>

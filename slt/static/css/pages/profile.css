@@ -107,6 +107,83 @@
     flex-wrap: wrap;
 }
 
+/* Syllabus progress card */
+.profile-syllabus-card {
+    padding: 28px 32px;
+}
+
+.profile-syllabus-card__heading {
+    margin: 0 0 20px;
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+}
+
+.profile-syllabus-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.profile-syllabus-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px 18px;
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    background: var(--glass-1);
+    backdrop-filter: blur(8px);
+}
+
+.profile-syllabus-item--started {
+    border-color: var(--accent-border);
+    background: var(--accent-soft);
+}
+
+.profile-syllabus-item__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.profile-syllabus-item__title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.profile-syllabus-item__count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--accent-light);
+}
+
+.profile-syllabus-item__count--empty {
+    color: var(--text-muted);
+}
+
+.profile-syllabus-bar {
+    height: 5px;
+    border-radius: var(--radius-pill);
+    background: var(--glass-3);
+    overflow: hidden;
+}
+
+.profile-syllabus-bar__fill {
+    height: 100%;
+    border-radius: inherit;
+    background: var(--accent-gradient);
+    transition: width 0.4s ease;
+}
+
+@media (max-width: 600px) {
+    .profile-syllabus-grid { grid-template-columns: 1fr; }
+    .profile-syllabus-card { padding: 22px 18px; }
+}
+
 /* History card */
 .profile-history-card {
     padding: 32px;
@@ -236,6 +313,16 @@
     color: var(--text-muted);
     text-align: center;
     font-size: 0.95rem;
+}
+
+.profile-practice-card {
+    margin-top: 20px;
+}
+
+.profile-practice-duration {
+    margin: 2px 0 0;
+    color: var(--text-muted);
+    font-size: 0.8rem;
 }
 
 @media (max-width: 720px) {

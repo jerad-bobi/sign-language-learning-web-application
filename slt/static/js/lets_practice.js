@@ -41,6 +41,12 @@ let signPredictionBusy = false;
 let captureCountdownIntervalId = 0;
 let captureCountdownRemaining = 0;
 
+const practiceSession = {
+    startTime: null,
+    signsDetected: 0,
+};
+const practiceSaveUrl = translatorShell ? (translatorShell.dataset.practiceSessionUrl || '') : '';
+
 const modes = {
     'text-to-sign': {
         label: 'Text → Sign',
@@ -60,11 +66,41 @@ const modes = {
     },
 };
 
+function startPracticeSession() {
+    practiceSession.startTime = Date.now();
+    practiceSession.signsDetected = 0;
+}
+
+function endPracticeSession() {
+    if (!practiceSession.startTime || !practiceSaveUrl) {
+        practiceSession.startTime = null;
+        return;
+    }
+
+    const durationSeconds = Math.round((Date.now() - practiceSession.startTime) / 1000);
+    const signsDetected = practiceSession.signsDetected;
+    practiceSession.startTime = null;
+    practiceSession.signsDetected = 0;
+
+    void fetch(practiceSaveUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': getCsrfToken(),
+        },
+        body: JSON.stringify({ duration_seconds: durationSeconds, signs_detected: signsDetected }),
+        keepalive: true,
+    });
+}
+
 function setMode(nextMode) {
     const config = modes[nextMode];
     if (!config || !translatorShell) {
         return;
     }
+
+    const prevMode = translatorShell.dataset.mode;
 
     translatorShell.dataset.mode = nextMode;
     modeLabel.textContent = config.label;
@@ -79,9 +115,13 @@ function setMode(nextMode) {
     });
 
     if (nextMode === 'sign-to-text') {
+        startPracticeSession();
         void startCameraPreview();
         startSignPredictionLoop();
     } else {
+        if (prevMode === 'sign-to-text') {
+            endPracticeSession();
+        }
         setSkeletalCaptureMode(false);
         stopSignPredictionLoop();
         stopCameraPreview();
@@ -248,7 +288,10 @@ function renderLookupResults(payload) {
     signPreview.innerHTML = `
         <div class="sign-result-list sign-result-list--compiled">
             <article class="sign-result-card sign-result-card--compiled">
-                <video id="compiled-sign-video" class="sign-result-video sign-result-video--compiled" autoplay muted playsinline preload="metadata"></video>
+                <div class="sign-clip-wrapper">
+                    <video id="compiled-sign-video" class="sign-result-video sign-result-video--compiled" autoplay muted playsinline preload="metadata"></video>
+                    <div id="sign-clip-label" class="sign-clip-label" aria-live="polite"></div>
+                </div>
             </article>
         </div>
     `;
@@ -628,6 +671,7 @@ async function runSignPrediction() {
             .slice(0, 3);
 
         if (candidateLabels.length > 1) {
+            practiceSession.signsDetected += 1;
             if (resolvedByContext && rawPredictedSign && rawPredictedSign !== predictedSign) {
                 renderSignTextOutput(`${predictedSign} (${confidencePercent}%) · ${predictionContext} mode resolved from ${rawPredictedSign}`, 'success');
                 return;
@@ -637,6 +681,7 @@ async function runSignPrediction() {
             return;
         }
 
+        practiceSession.signsDetected += 1;
         if (resolvedByContext && rawPredictedSign && rawPredictedSign !== predictedSign) {
             renderSignTextOutput(`${predictedSign} (${confidencePercent}%) · ${predictionContext} mode resolved from ${rawPredictedSign}`, 'success');
             return;
@@ -765,6 +810,12 @@ function loadCompiledClip(index) {
     compiledVideo.src = clip.src;
     compiledVideo.load();
 
+    const clipLabel = document.getElementById('sign-clip-label');
+    if (clipLabel) {
+        clipLabel.textContent = clip.word || '';
+        clipLabel.classList.toggle('sign-clip-label--visible', Boolean(clip.word));
+    }
+
     const playPromise = compiledVideo.play();
     if (playPromise && typeof playPromise.catch === 'function') {
         playPromise.catch(() => {
@@ -855,6 +906,9 @@ if (captureSignNameInput) {
 window.addEventListener('keydown', handleSkeletalCaptureKeydown);
 
 window.addEventListener('beforeunload', () => {
+    if (translatorShell && translatorShell.dataset.mode === 'sign-to-text') {
+        endPracticeSession();
+    }
     stopSignPredictionLoop();
     stopCameraPreview();
 });

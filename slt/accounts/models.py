@@ -102,3 +102,41 @@ class SearchHistory(models.Model):
 
     def __str__(self) -> str:
         return f'{self.account.username} searched "{self.search_term}"'
+
+
+class VocabularyFavorite(models.Model):
+    account = models.ForeignKey(
+        Account,
+        on_delete=models.CASCADE,
+        related_name='vocabulary_favorites',
+    )
+    word = models.CharField(max_length=100)
+    saved_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'vocabulary_favorite'
+        ordering = ['-saved_at']
+        constraints = [
+            models.UniqueConstraint(fields=['account', 'word'], name='unique_vocab_favorite_per_user'),
+        ]
+
+    def __str__(self) -> str:
+        return f'{self.account.username} → {self.word}'
+
+
+class PracticeSession(models.Model):
+    account = models.ForeignKey(
+        Account,
+        on_delete=models.CASCADE,
+        related_name='practice_sessions',
+    )
+    signs_detected = models.PositiveIntegerField(default=0)
+    duration_seconds = models.PositiveIntegerField(default=0)
+    session_end = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'practice_session'
+        ordering = ['-session_end']
+
+    def __str__(self) -> str:
+        return f'{self.account.username} practice {self.session_end}'

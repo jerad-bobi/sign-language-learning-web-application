@@ -2,7 +2,16 @@
   "permissions": {
     "allow": [
       "Bash(Get-ChildItem -Force)",
-      "Bash(Select-Object Name)"
+      "Bash(Select-Object Name)",
+      "Bash(xargs grep -l \"syllabus\\\\|Syllabus\")",
+      "Bash(xargs grep -l \"syllabus\\\\|vocabulary\\\\|vocab\")",
+      "Bash(xargs grep -l \"vocabl\\\\|term\\\\|word\")",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\parag\\\\Desktop\\\\sign-language-learning-web-application\" -Recurse -Directory)",
+      "WebSearch",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\parag\\\\Desktop\\\\sign-language-learning-web-application\" -Recurse -Force)",
+      "Bash(Select-Object -First 50)",
+      "Bash(xargs grep -l \"models\\\\.\\\\|ForeignKey\\\\|ManyToMany\\\\|OneToOne\")",
+      "Bash(python manage.py migrate)"
     ]
   }
 }

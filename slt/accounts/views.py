@@ -10,7 +10,7 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 
 from .forms import EditProfileForm, ForgotPasswordForm, LoginForm, RegisterForm
-from .models import Account, BrainQuizAttempt
+from .models import Account, BrainQuizAttempt, PracticeSession, SyllabusProgress
 
 
 SESSION_ACCOUNT_ID = 'account_id'
@@ -325,6 +325,14 @@ def delete_account_view(request: HttpRequest) -> HttpResponse:
     return redirect('account_access')
 
 
+_SYLLABUS_META = [
+    ('letters-and-numbers', 'Letters and Numbers'),
+    ('greetings-and-personal', 'Greetings and Personal'),
+    ('polite-phrases', 'Polite Phrases'),
+    ('daily-life', 'Daily Life'),
+]
+
+
 def about_me(request: HttpRequest) -> HttpResponse:
     account = _get_current_account(request)
     if not account:
@@ -347,6 +355,21 @@ def about_me(request: HttpRequest) -> HttpResponse:
         for key, config in SCORE_FILTERS.items()
     ]
 
+    progress_by_key = {
+        sp.syllabus_key: sp
+        for sp in SyllabusProgress.objects.filter(account=account)
+    }
+    all_syllabus_progress = [
+        {
+            'key': key,
+            'title': title,
+            'progress': progress_by_key.get(key),
+        }
+        for key, title in _SYLLABUS_META
+    ]
+
+    practice_sessions = list(account.practice_sessions.all()[:20])
+
     return render(
         request,
         'profile.html',
@@ -359,5 +382,7 @@ def about_me(request: HttpRequest) -> HttpResponse:
             'selected_score_filter': selected_score_filter,
             'selected_score_filter_label': selected_filter['label'],
             'score_filter_options': filter_options,
+            'all_syllabus_progress': all_syllabus_progress,
+            'practice_sessions': practice_sessions,
         },
     )

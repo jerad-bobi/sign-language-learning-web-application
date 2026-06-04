@@ -55,6 +55,7 @@ const brainQuizState = {
     timerPaused: true,
     scoreSaved: false,
     scoreSaveStatus: '',
+    questionLog: [],
 };
 
 const brainQuizApiUrl = brainQuizModal ? brainQuizModal.dataset.quizUrl || '' : '';
@@ -119,6 +120,41 @@ function showBrainEndScreen() {
     brainEndScreen.hidden = false;
     const saveSuffix = brainQuizState.scoreSaveStatus ? ` ${brainQuizState.scoreSaveStatus}` : '';
     brainEndSummary.textContent = `You scored ${brainQuizState.score} and answered ${brainQuizState.answered} questions before the timer ran out.${saveSuffix}`;
+    renderBrainBreakdown();
+}
+
+function renderBrainBreakdown() {
+    const breakdownEl = document.getElementById('brain-breakdown');
+    if (!breakdownEl) {
+        return;
+    }
+
+    const log = brainQuizState.questionLog;
+    if (!log.length) {
+        breakdownEl.innerHTML = '';
+        return;
+    }
+
+    const correct = log.filter((q) => q.correct).length;
+    const pct = Math.round((correct / log.length) * 100);
+
+    breakdownEl.innerHTML = `
+        <div class="quiz-breakdown">
+            <div class="quiz-breakdown__header">
+                <span class="quiz-breakdown__title">Round breakdown</span>
+                <span class="quiz-breakdown__accuracy">${pct}% accuracy</span>
+            </div>
+            <div class="quiz-breakdown__list">
+                ${log.map((item, i) => `
+                    <div class="quiz-breakdown__row quiz-breakdown__row--${item.correct ? 'correct' : 'wrong'}">
+                        <span class="quiz-breakdown__num">${i + 1}</span>
+                        <span class="quiz-breakdown__sign">${escapeBrainHtml(item.label)}</span>
+                        <span class="quiz-breakdown__result">${item.correct ? '✓' : '✗'}</span>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
 }
 
 function resetBrainQuizState() {
@@ -132,6 +168,7 @@ function resetBrainQuizState() {
     brainQuizState.timerPaused = true;
     brainQuizState.scoreSaved = false;
     brainQuizState.scoreSaveStatus = '';
+    brainQuizState.questionLog = [];
     renderBrainHud();
     renderBrainLoadingQuestion('Loading question...');
     renderBrainFeedback('Timer will start when the video begins playing.', 'idle');
@@ -464,6 +501,12 @@ function handleBrainAnswer(selectedValue) {
 
     const correctValue = brainQuizState.currentQuestion.correct_answer;
     const isCorrect = selectedValue === correctValue;
+
+    brainQuizState.questionLog.push({
+        label: brainQuizState.currentQuestion.correct_label || correctValue,
+        correct: isCorrect,
+        type: brainQuizState.currentQuestion.question_type || 'video',
+    });
 
     if (isCorrect) {
         brainQuizState.score += 1;

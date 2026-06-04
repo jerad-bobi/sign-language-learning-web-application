@@ -138,6 +138,107 @@
     background: var(--accent-soft);
 }
 
+/* ===== DASHBOARD SYLLABUS STRIP ===== */
+
+.dashboard-syllabus {
+    margin-top: 18px;
+}
+
+.dashboard-syllabus__label {
+    margin: 0 0 10px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.dashboard-syllabus__grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.dash-syllabus-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px 18px;
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    background: var(--glass-1);
+    backdrop-filter: blur(10px);
+    transition: border-color 0.22s, transform 0.22s, background 0.22s;
+    text-decoration: none;
+}
+
+.dash-syllabus-card:hover {
+    border-color: var(--accent-border);
+    background: var(--glass-2);
+    transform: translateY(-2px);
+}
+
+.dash-syllabus-card--active {
+    border-color: var(--accent-border);
+    background: var(--accent-soft);
+}
+
+.dash-syllabus-card__title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dash-syllabus-card__progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dash-syllabus-bar {
+    flex: 1;
+    height: 4px;
+    border-radius: var(--radius-pill);
+    background: var(--glass-3);
+    overflow: hidden;
+}
+
+.dash-syllabus-bar__fill {
+    height: 100%;
+    border-radius: inherit;
+    background: var(--accent-gradient);
+}
+
+.dash-syllabus-card__count {
+    font-size: 0.72rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.dash-syllabus-card__start {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--accent-light);
+}
+
+@media (max-width: 900px) {
+    .dashboard-syllabus__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-syllabus__grid {
+        grid-template-columns: 1fr;
+    }
+    .dash-card--wide { grid-column: span 1; }
+}
+
 /* ===== INFO SECTION ===== */
 
 .info-section {

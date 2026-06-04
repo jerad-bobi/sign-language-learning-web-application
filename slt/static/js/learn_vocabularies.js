@@ -7,9 +7,15 @@ const dictionaryResultsTitle = document.getElementById('dictionary-results-title
 const dictionaryLookupUrl = dictionaryShell ? dictionaryShell.dataset.lookupUrl : '';
 const dictionaryHistoryUrl = dictionaryShell ? dictionaryShell.dataset.historyUrl : '';
 const dictionaryClearHistoryUrl = dictionaryShell ? dictionaryShell.dataset.clearHistoryUrl : '';
+const dictionaryFavoritesUrl = dictionaryShell ? dictionaryShell.dataset.favoritesUrl : '';
+const dictionaryToggleFavoriteUrl = dictionaryShell ? dictionaryShell.dataset.toggleFavoriteUrl : '';
 const dictionaryHistorySection = document.getElementById('dictionary-history-section');
 const dictionaryHistoryBody = document.getElementById('dictionary-history-body');
+const dictionaryFavoritesSection = document.getElementById('dictionary-favorites-section');
+const dictionaryFavoritesBody = document.getElementById('dictionary-favorites-body');
 const clearHistoryBtn = document.getElementById('clear-history-btn');
+
+let favoriteWords = new Set();
 
 let dictionaryController = null;
 let dictionaryCompiledVideo = null;
@@ -108,6 +114,13 @@ function renderDictionaryResults(query, payload) {
         const primaryVideo = entry.videos[0];
         const extraSources = Math.max(entry.videos.length - 1, 0);
         const definition = entry.definition || 'No definition available.';
+        const word = entry.term || entry.display_term || '';
+        const isFav = favoriteWords.has(word.toLowerCase());
+        const favBtn = dictionaryFavoritesUrl ? `
+            <button class="dictionary-card__fav-btn${isFav ? ' dictionary-card__fav-btn--active' : ''}" type="button" data-fav-word="${escapeAttribute(word)}" aria-label="${isFav ? 'Remove from saved signs' : 'Save sign'}">
+                ${isFav ? '★' : '☆'} ${isFav ? 'Saved' : 'Save'}
+            </button>
+        ` : '';
 
         return `
             <article class="dictionary-card">
@@ -118,17 +131,24 @@ function renderDictionaryResults(query, payload) {
                 </div>
                 <div class="dictionary-card__copy">
                     <p class="dictionary-card__eyebrow">EN</p>
-                    <h3 class="dictionary-card__word">${escapeHtml(entry.term || entry.display_term)}</h3>
+                    <h3 class="dictionary-card__word">${escapeHtml(word)}</h3>
                     <p class="dictionary-card__definition">${escapeHtml(definition)}</p>
                     <p class="dictionary-card__meta">
                         Src: ${escapeHtml(primaryVideo.provider || 'SignASL')}
                         ${extraSources ? ` · +${extraSources} src` : ''}
                     </p>
-                    <a class="dictionary-card__link" href="${escapeAttribute(entry.page_url)}" target="_blank" rel="noreferrer">↗ Entry</a>
+                    <div class="dictionary-card__actions">
+                        <a class="dictionary-card__link" href="${escapeAttribute(entry.page_url)}" target="_blank" rel="noreferrer">↗ Entry</a>
+                        ${favBtn}
+                    </div>
                 </div>
             </article>
         `;
     }).join('');
+
+    dictionaryResultsBody.querySelectorAll('[data-fav-word]').forEach((btn) => {
+        btn.addEventListener('click', () => void toggleFavorite(btn.dataset.favWord || ''));
+    });
 }
 
 function renderCompiledNumberResult(query, payload, foundEntries) {
@@ -327,6 +347,101 @@ function renderSearchHistory(history) {
     });
 }
 
+async function loadVocabularyFavorites() {
+    if (!dictionaryFavoritesUrl || !dictionaryFavoritesSection) {
+        return;
+    }
+
+    try {
+        const response = await fetch(dictionaryFavoritesUrl, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        });
+
+        if (!response.ok) {
+            return;
+        }
+
+        const data = await response.json();
+        favoriteWords = new Set((data.favorites || []).map((w) => String(w).toLowerCase()));
+        renderFavorites(data.favorites || []);
+    } catch (_) {
+        // Silently fail
+    }
+}
+
+function renderFavorites(favorites) {
+    if (!dictionaryFavoritesBody) {
+        return;
+    }
+
+    if (!favorites.length) {
+        dictionaryFavoritesBody.innerHTML = '<div class="dictionary-empty-state">No saved signs yet.</div>';
+        return;
+    }
+
+    dictionaryFavoritesBody.innerHTML = `
+        <div class="dictionary-favorites__list">
+            ${favorites.map((word) => `
+                <div class="dictionary-favorites__item">
+                    <button class="dictionary-favorites__search" data-search-term="${escapeAttribute(word)}">${escapeHtml(word)}</button>
+                    <button class="dictionary-favorites__remove" data-fav-word="${escapeAttribute(word)}" aria-label="Remove ${escapeAttribute(word)} from saved signs">✕</button>
+                </div>
+            `).join('')}
+        </div>
+    `;
+
+    dictionaryFavoritesBody.querySelectorAll('.dictionary-favorites__search').forEach((btn) => {
+        btn.addEventListener('click', () => void runDictionarySearch(btn.dataset.searchTerm || ''));
+    });
+
+    dictionaryFavoritesBody.querySelectorAll('.dictionary-favorites__remove').forEach((btn) => {
+        btn.addEventListener('click', () => void toggleFavorite(btn.dataset.favWord || ''));
+    });
+}
+
+async function toggleFavorite(word) {
+    if (!dictionaryToggleFavoriteUrl || !word) {
+        return;
+    }
+
+    try {
+        const response = await fetch(dictionaryToggleFavoriteUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCsrfToken(),
+            },
+            body: JSON.stringify({ word }),
+        });
+
+        if (!response.ok) {
+            return;
+        }
+
+        const data = await response.json();
+        if (data.favorited) {
+            favoriteWords.add(word.toLowerCase());
+        } else {
+            favoriteWords.delete(word.toLowerCase());
+        }
+
+        void loadVocabularyFavorites();
+
+        // Refresh favorite buttons in current results without re-fetching
+        document.querySelectorAll('[data-fav-word]').forEach((btn) => {
+            if ((btn.dataset.favWord || '').toLowerCase() === word.toLowerCase()) {
+                const isFav = favoriteWords.has(word.toLowerCase());
+                btn.classList.toggle('dictionary-card__fav-btn--active', isFav);
+                btn.setAttribute('aria-label', isFav ? 'Remove from saved signs' : 'Save sign');
+                btn.textContent = isFav ? '★ Saved' : '☆ Save';
+            }
+        });
+    } catch (_) {
+        // Silently fail
+    }
+}
+
 async function clearSearchHistory() {
     if (!dictionaryClearHistoryUrl) {
         return;
@@ -405,3 +520,17 @@ renderDictionaryEmptyState();
 if (dictionaryHistorySection) {
     void loadSearchHistory();
 }
+
+// Load saved favorites on page load
+if (dictionaryFavoritesSection) {
+    void loadVocabularyFavorites();
+}
+
+// Auto-search if ?q= param is present (e.g. from home dashboard search tags)
+(function () {
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get('q');
+    if (q) {
+        void runDictionarySearch(q);
+    }
+})();

@@ -31,6 +31,33 @@
         </div>
     </section>
 
+    {% if all_syllabus_progress %}
+    <section class="panel-surface profile-syllabus-card">
+        <h2 class="profile-syllabus-card__heading">Syllabus Progress</h2>
+        <div class="profile-syllabus-grid">
+            {% for item in all_syllabus_progress %}
+            <div class="profile-syllabus-item{% if item.progress %} profile-syllabus-item--started{% endif %}">
+                <div class="profile-syllabus-item__header">
+                    <span class="profile-syllabus-item__title">{{ item.title }}</span>
+                    {% if item.progress %}
+                    <span class="profile-syllabus-item__count">{{ item.progress.current_term_index }}/{{ item.progress.total_terms }}</span>
+                    {% else %}
+                    <span class="profile-syllabus-item__count profile-syllabus-item__count--empty">Not started</span>
+                    {% endif %}
+                </div>
+                <div class="profile-syllabus-bar">
+                    {% if item.progress %}
+                    <div class="profile-syllabus-bar__fill" style="width:{% widthratio item.progress.current_term_index item.progress.total_terms 100 %}%"></div>
+                    {% else %}
+                    <div class="profile-syllabus-bar__fill" style="width:0%"></div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
     <section class="profile-history-grid">
         <article class="panel-surface profile-history-card">
             <div class="profile-history-card__header">
@@ -74,6 +101,30 @@
             </div>
             {% endif %}
         </article>
+    </section>
+
+        {% if practice_sessions %}
+        <article class="panel-surface profile-history-card profile-practice-card">
+            <div class="profile-history-card__header">
+                <div>
+                    <h2>Practice Sessions</h2>
+                    <p class="profile-history-card__caption">{{ practice_sessions|length }} recent session{{ practice_sessions|length|pluralize }} in Sign → Text mode.</p>
+                </div>
+            </div>
+            <div class="profile-history-list" role="list">
+                {% for session in practice_sessions %}
+                <article class="profile-history-item" role="listitem">
+                    <div>
+                        <p class="profile-history-item__eyebrow">Practice</p>
+                        <h3 class="profile-history-item__score">{{ session.signs_detected }} sign{{ session.signs_detected|pluralize }} detected</h3>
+                        <p class="profile-practice-duration">{{ session.duration_seconds }}s session</p>
+                    </div>
+                    <time class="profile-history-item__date" datetime="{{ session.session_end|date:'c' }}">{{ session.session_end|date:'M d, Y H:i' }}</time>
+                </article>
+                {% endfor %}
+            </div>
+        </article>
+        {% endif %}
     </section>
 </section>
 {% endblock %}

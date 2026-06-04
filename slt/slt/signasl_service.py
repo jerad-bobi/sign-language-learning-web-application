@@ -129,6 +129,7 @@ def _build_sequence(entries: list[dict]) -> list[dict]:
         {
             'src': entry['videos'][0]['src'],
             'poster': entry['videos'][0]['poster'],
+            'word': _clean_text(entry.get('term') or entry.get('display_term') or '').title(),
         }
         for entry in entries
         if entry['found'] and entry['videos']
