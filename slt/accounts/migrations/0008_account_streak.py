@@ -4,7 +4,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0007_remove_account_verification_token'),
+        ('accounts', '0006a_syllabusprogress_completed_terms'),
     ]
 
     operations = [
@@ -19,3 +19,4 @@ class Migration(migrations.Migration):
             field=models.DateField(blank=True, default=None, null=True),
         ),
     ]
+
