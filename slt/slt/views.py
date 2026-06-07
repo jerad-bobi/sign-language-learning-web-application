@@ -68,15 +68,42 @@ def _clamp_syllabus_term_index(raw_index, terms: list[str]) -> int:
     return max(0, min(index, len(terms) - 1))
 
 
+def _normalize_completed_term_indices(raw_indices) -> list[int]:
+    if not isinstance(raw_indices, list):
+        return []
+
+    normalized = []
+    for index in raw_indices:
+        try:
+            index_int = int(index)
+        except (TypeError, ValueError):
+            continue
+
+        if index_int < 0:
+            continue
+
+        normalized.append(index_int)
+
+    return sorted(set(normalized))
+
+
 def _build_syllabus_progress_payload(terms: list[str], progress) -> dict | None:
     if not progress or not terms:
         return None
 
     current_term_index = _clamp_syllabus_term_index(progress.get('current_term_index', 0), terms)
+    completed_indices = _normalize_completed_term_indices(progress.get('completed_term_indices', []))
+    if not completed_indices and progress.get('completed_term_indices') in (None, []) and current_term_index > 0:
+        completed_indices = list(range(current_term_index))
+
+    completed_count = sum(1 for index in completed_indices if 0 <= index < len(terms))
+
     return {
         'current_term_index': current_term_index,
         'current_term': terms[current_term_index],
         'total_terms': len(terms),
+        'completed_term_indices': completed_indices,
+        'completed_term_count': completed_count,
         'updated_at': progress.get('updated_at'),
     }
 
@@ -393,7 +420,7 @@ def _get_syllabus_progress(request, syllabus_key: str, terms: list[str]) -> dict
     if account:
         progress = (
             SyllabusProgress.objects.filter(account=account, syllabus_key=syllabus_key)
-            .values('current_term_index', 'updated_at')
+            .values('current_term_index', 'completed_term_indices', 'updated_at')
             .first()
         )
         if progress:
@@ -406,12 +433,16 @@ def _get_syllabus_progress(request, syllabus_key: str, terms: list[str]) -> dict
     return _build_syllabus_progress_payload(terms, progress)
 
 
-def _save_syllabus_progress(request, syllabus_key: str, terms: list[str], current_term_index: int) -> dict:
+def _save_syllabus_progress(request, syllabus_key: str, terms: list[str], current_term_index: int, completed_term_indices: list[int] | None = None) -> dict:
     clamped_index = _clamp_syllabus_term_index(current_term_index, terms)
+    normalized_indices = _normalize_completed_term_indices(completed_term_indices or [])
+    normalized_indices = [index for index in normalized_indices if 0 <= index < len(terms)]
+
     progress_payload = {
         'current_term_index': clamped_index,
         'current_term': terms[clamped_index],
         'total_terms': len(terms),
+        'completed_term_indices': normalized_indices,
     }
 
     account = _get_current_account(request)
@@ -425,12 +456,15 @@ def _save_syllabus_progress(request, syllabus_key: str, terms: list[str], curren
             'current_term_index': clamped_index,
             'current_term': progress.current_term,
             'total_terms': progress.total_terms,
+            'completed_term_indices': progress.completed_term_indices,
+            'completed_term_count': sum(1 for index in progress.completed_term_indices if 0 <= index < len(terms)),
             'updated_at': progress.updated_at.isoformat(),
         }
 
     session_progress = request.session.get(SYLLABUS_PROGRESS_SESSION_KEY, {})
     session_progress[syllabus_key] = {
         'current_term_index': clamped_index,
+        'completed_term_indices': normalized_indices,
         'updated_at': None,
     }
     request.session[SYLLABUS_PROGRESS_SESSION_KEY] = session_progress
@@ -439,6 +473,8 @@ def _save_syllabus_progress(request, syllabus_key: str, terms: list[str], curren
         'current_term_index': clamped_index,
         'current_term': terms[clamped_index],
         'total_terms': len(terms),
+        'completed_term_indices': normalized_indices,
+        'completed_term_count': len(normalized_indices),
         'updated_at': None,
     }
 
@@ -584,11 +620,19 @@ def save_syllabus_progress(request, syllabus_key: str):
     except (UnicodeDecodeError, json.JSONDecodeError):
         return JsonResponse({'error': 'Invalid request body.'}, status=400)
 
+    completed_indices = _normalize_completed_term_indices(payload.get('completed_term_indices', []))
+
     if bool(payload.get('completed')):
         _clear_syllabus_progress(request, syllabus_key)
         return JsonResponse({'saved': True, 'completed': True})
 
-    progress = _save_syllabus_progress(request, syllabus_key, terms, payload.get('current_term_index', 0))
+    progress = _save_syllabus_progress(
+        request,
+        syllabus_key,
+        terms,
+        payload.get('current_term_index', 0),
+        completed_indices,
+    )
     return JsonResponse({'saved': True, 'completed': False, 'progress': progress})
 
 

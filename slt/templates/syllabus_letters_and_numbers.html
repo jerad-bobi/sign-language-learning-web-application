@@ -45,7 +45,7 @@
     <div class="syllabus-progress__header">
         <div>
             <h2>Lesson progress</h2>
-            <p id="syllabus-progress-text">Lesson {{ initial_term_index|add:1 }} of {{ syllabus_terms|length }}</p>
+            <p id="syllabus-progress-text">Completed {{ syllabus_progress.completed_term_count|default:0 }} of {{ syllabus_terms|length }}</p>
         </div>
         <button class="button button--secondary" type="button" id="syllabus-pause-button">Pause and return to quiz</button>
     </div>
@@ -102,13 +102,16 @@
 
             <div class="syllabus-camera-actions">
                 <button class="button button--secondary" type="button" id="syllabus-restart-camera">Restart Camera</button>
-                <button class="button button--primary syllabus-proceed-button" type="button" id="syllabus-proceed-button" hidden>Proceed</button>
+            <button class="button button--secondary" type="button" id="syllabus-back-button">Back</button>
+            <button class="button button--secondary" type="button" id="syllabus-skip-button">Skip</button>
+            <button class="button button--primary syllabus-proceed-button" type="button" id="syllabus-proceed-button" hidden>Proceed</button>
             </div>
         </article>
     </div>
 </section>
 
 {{ syllabus_terms|json_script:"syllabus-terms-data" }}
+{{ syllabus_progress|json_script:"syllabus-progress-data" }}
 {% endblock %}
 
 {% block scripts %}

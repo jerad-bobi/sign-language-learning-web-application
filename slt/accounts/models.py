@@ -71,6 +71,7 @@ class SyllabusProgress(models.Model):
     current_term_index = models.PositiveIntegerField(default=0)
     current_term = models.CharField(max_length=32)
     total_terms = models.PositiveIntegerField(default=0)
+    completed_term_indices = models.JSONField(default=list)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

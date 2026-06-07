@@ -20,6 +20,8 @@
     const progressText = document.getElementById('syllabus-progress-text');
     const restartCameraButton = document.getElementById('syllabus-restart-camera');
     const proceedButton = document.getElementById('syllabus-proceed-button');
+    const backButton = document.getElementById('syllabus-back-button');
+    const skipButton = document.getElementById('syllabus-skip-button');
     const lessonTitle = document.getElementById('syllabus-lesson-title');
     const lessonStatus = document.getElementById('syllabus-lesson-status');
     const referenceTitle = document.getElementById('syllabus-reference-title');
@@ -27,6 +29,7 @@
     const instructionList = document.getElementById('syllabus-instruction-list');
     const overlayContext = cameraOverlay ? cameraOverlay.getContext('2d') : null;
     const termsDataNode = document.getElementById('syllabus-terms-data');
+    const progressDataNode = document.getElementById('syllabus-progress-data');
 
     const syllabusTerms = termsDataNode ? JSON.parse(termsDataNode.textContent) : [initialTerm];
 
@@ -43,7 +46,24 @@
     let correctHoldStartTime = 0;
     let lastHoldCountdownValue = 0;
     let currentTermIndex = Math.max(0, syllabusTerms.indexOf(initialTerm));
+    let completedTermIndices = new Set();
     let progressRequestInFlight = false;
+
+    if (progressDataNode && progressDataNode.textContent) {
+        try {
+            const initialProgress = JSON.parse(progressDataNode.textContent);
+            if (Array.isArray(initialProgress.completed_term_indices)) {
+                initialProgress.completed_term_indices.forEach(function (index) {
+                    const parsed = Number.parseInt(index, 10);
+                    if (Number.isFinite(parsed) && parsed >= 0 && parsed < syllabusTerms.length) {
+                        completedTermIndices.add(parsed);
+                    }
+                });
+            }
+        } catch (error) {
+            completedTermIndices = new Set();
+        }
+    }
 
     if (Number.isFinite(initialTermIndex)) {
         currentTermIndex = Math.max(0, Math.min(initialTermIndex, Math.max(0, syllabusTerms.length - 1)));
@@ -283,18 +303,24 @@
 
         updateInstructionList();
         updateProgressDisplay();
+        updateNavigationButtons();
+    }
+
+    function getCompletedTermCount() {
+        return Math.max(0, Math.min(syllabusTerms.length, completedTermIndices.size));
     }
 
     function updateProgressDisplay() {
         const totalTerms = syllabusTerms.length || 1;
-        const progressPercent = Math.max(0, Math.min(100, ((currentTermIndex + 1) / totalTerms) * 100));
+        const completedCount = getCompletedTermCount();
+        const progressPercent = Math.max(0, Math.min(100, (completedCount / totalTerms) * 100));
 
         if (progressFill) {
             progressFill.style.width = progressPercent.toFixed(2) + '%';
         }
 
         if (progressText) {
-            progressText.textContent = 'Lesson ' + (currentTermIndex + 1) + ' of ' + totalTerms;
+            progressText.textContent = 'Completed ' + completedCount + ' of ' + totalTerms;
         }
     }
 
@@ -316,6 +342,7 @@
                 },
                 body: JSON.stringify({
                     current_term_index: currentTermIndex,
+                    completed_term_indices: Array.from(completedTermIndices),
                     completed: Boolean(config.completed),
                 }),
             });
@@ -331,6 +358,53 @@
         } finally {
             progressRequestInFlight = false;
         }
+    }
+
+    function clampTermIndex(termIndex) {
+        return Math.max(0, Math.min(termIndex, syllabusTerms.length - 1));
+    }
+
+    function markCurrentTermCompleted() {
+        if (!completedTermIndices.has(currentTermIndex)) {
+            completedTermIndices.add(currentTermIndex);
+        }
+    }
+
+    function updateNavigationButtons() {
+        if (backButton) {
+            backButton.disabled = currentTermIndex <= 0;
+        }
+
+        if (skipButton) {
+            skipButton.disabled = syllabusTerms.length === 0;
+        }
+    }
+
+    function redirectToQuiz() {
+        if (!returnUrl) {
+            return;
+        }
+
+        if (cameraStatus) {
+            cameraStatus.textContent = 'Redirecting to quiz...';
+        }
+
+        setTimeout(function () {
+            window.location.href = returnUrl;
+        }, 2600);
+    }
+
+    function moveToTerm(termIndex) {
+        currentTermIndex = clampTermIndex(termIndex);
+        hasMatchedCorrectSign = false;
+        lastAudibleOutcome = '';
+        resetCorrectHold();
+        hideProceedButton();
+        updateLessonLabels();
+        renderDetectionMessage('Show your hand to start detection.', 'idle');
+        void loadReferenceVideo();
+        void startCamera();
+        updateNavigationButtons();
     }
 
     async function loadReferenceVideo() {
@@ -814,31 +888,67 @@
         });
     }
 
-    if (proceedButton) {
-        proceedButton.addEventListener('click', async function () {
+    if (backButton) {
+        backButton.addEventListener('click', async function () {
+            if (currentTermIndex <= 0) {
+                return;
+            }
+
+            stopCamera();
+            currentTermIndex -= 1;
+            moveToTerm(currentTermIndex);
+            await persistSyllabusProgress();
+        });
+    }
+
+    if (skipButton) {
+        skipButton.addEventListener('click', async function () {
             if (currentTermIndex >= syllabusTerms.length - 1) {
                 hideProceedButton();
-                void persistSyllabusProgress({ completed: true });
-                renderDetectionMessage('All signs in this syllabus are completed.', 'success');
-                if (cameraStatus) {
-                    cameraStatus.textContent = 'Syllabus complete.';
-                }
-                if (lessonStatus) {
-                    lessonStatus.textContent = 'Syllabus complete';
+                const wasSaved = await persistSyllabusProgress({ completed: true });
+                if (wasSaved) {
+                    renderDetectionMessage('Lesson skipped. Syllabus complete.', 'success');
+                    if (cameraStatus) {
+                        cameraStatus.textContent = 'Syllabus complete.';
+                    }
+                    if (lessonStatus) {
+                        lessonStatus.textContent = 'Syllabus complete';
+                    }
+                    redirectToQuiz();
                 }
                 return;
             }
 
+            stopCamera();
             currentTermIndex += 1;
-            hasMatchedCorrectSign = false;
-            lastAudibleOutcome = '';
-            resetCorrectHold();
-            hideProceedButton();
-            updateLessonLabels();
-            renderDetectionMessage('Show your hand to start detection.', 'idle');
-            void persistSyllabusProgress();
-            void loadReferenceVideo();
-            void startCamera();
+            moveToTerm(currentTermIndex);
+            await persistSyllabusProgress();
+        });
+    }
+
+    if (proceedButton) {
+        proceedButton.addEventListener('click', async function () {
+            if (currentTermIndex >= syllabusTerms.length - 1) {
+                markCurrentTermCompleted();
+                hideProceedButton();
+                const wasSaved = await persistSyllabusProgress({ completed: true });
+                if (wasSaved) {
+                    renderDetectionMessage('Congratulations! You finished the syllabus and will be redirected to the quiz page.', 'success');
+                    if (cameraStatus) {
+                        cameraStatus.textContent = 'Syllabus complete.';
+                    }
+                    if (lessonStatus) {
+                        lessonStatus.textContent = 'Syllabus complete';
+                    }
+                    redirectToQuiz();
+                }
+                return;
+            }
+
+            markCurrentTermCompleted();
+            currentTermIndex += 1;
+            moveToTerm(currentTermIndex);
+            await persistSyllabusProgress();
         });
     }
 
