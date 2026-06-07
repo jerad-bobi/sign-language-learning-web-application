@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0006_account_verification_token'),
+        ('accounts', '0006a_syllabusprogress_completed_terms'),
     ]
 
     operations = [
