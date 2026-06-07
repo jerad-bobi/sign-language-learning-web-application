@@ -104,8 +104,10 @@ DATABASES = {
         'PASSWORD': os.environ.get('MYSQLPASSWORD', ''),
         'HOST': os.environ.get('MYSQLHOST', 'localhost'),
         'PORT': os.environ.get('MYSQLPORT', '3306'),
+        'CONN_MAX_AGE': 0,
         'OPTIONS': {
             'charset': 'utf8mb4',
+            'connect_timeout': 10,
         },
     }
 }
