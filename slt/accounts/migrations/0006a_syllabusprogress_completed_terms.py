@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0006_account_verification_token'),
+        ('accounts', '0007_remove_account_verification_token'),
     ]
 
     operations = [
@@ -17,3 +17,4 @@ class Migration(migrations.Migration):
             field=models.JSONField(default=list),
         ),
     ]
+
