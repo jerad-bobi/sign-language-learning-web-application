@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0005_searchhistory'),
+        ('accounts', '0006_account_verification_token'),
     ]
 
     operations = [
